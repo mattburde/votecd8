@@ -251,7 +251,7 @@ function ballotBoxIcon(accent, uncertain) {
 const adamsDropboxLayer = L.geoJSON(adamsDropboxData, {
   pointToLayer: (feature, latlng) => L.marker(latlng, { icon: ballotBoxIcon('#1d4ed8', false) }),
   onEachFeature: (f, layer) => {
-    layer.bindPopup(`<b>${f.properties.name}</b><br>${f.properties.city}, Adams County<br><span style="color:#666;font-size:12px">${f.properties.note}</span>`);
+    layer.bindPopup(`<b>Drop Box: ${f.properties.name}</b><br>${f.properties.city}, Adams County<br><span style="color:#666;font-size:12px">${f.properties.note}</span>`);
   }
 }).addTo(map);
 
@@ -259,7 +259,7 @@ const larimerDropboxLayer = L.geoJSON(larimerDropboxData, {
   pointToLayer: (feature, latlng) => L.marker(latlng, { icon: ballotBoxIcon('#c2410c', false) }),
   onEachFeature: (f, layer) => {
     const drive = f.properties.drive_up === 'Yes' ? 'Drive-up accessible' : 'Walk-up';
-    layer.bindPopup(`<b>${f.properties.name}</b><br>${f.properties.address}, ${f.properties.city}<br><span style="color:#666;font-size:12px">${drive} · Larimer County · Confirmed for Nov 3, 2026</span>`);
+    layer.bindPopup(`<b>Drop Box: ${f.properties.name}</b><br>${f.properties.address}, ${f.properties.city}<br><span style="color:#666;font-size:12px">${drive} · Larimer County · Confirmed for Nov 3, 2026</span>`);
   }
 }).addTo(map);
 
@@ -273,7 +273,7 @@ const weldDropboxLayer = L.geoJSON(weldDropboxData, {
     const warn = status.toLowerCase().includes('verify')
       ? `<br><span style="color:#b45309;font-size:12px;font-weight:600">⚠ ${status}</span>`
       : `<br><span style="color:#666;font-size:12px">${status}</span>`;
-    layer.bindPopup(`<b>${f.properties.Location}</b><br>${f.properties.Address}${warn}<br><span style="color:#666;font-size:12px">Weld County · June 2026 Primary list · user-supplied coordinates, not independently verified</span>`);
+    layer.bindPopup(`<b>Drop Box: ${f.properties.Location}</b><br>${f.properties.Address}${warn}<br><span style="color:#666;font-size:12px">Weld County · June 2026 Primary list · user-supplied coordinates, not independently verified</span>`);
   }
 }).addTo(map);
 
