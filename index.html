@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-polylinedecorator/1.1.0/leaflet.polylineDecorator.min.js"></script>
 <style>
   :root {
     --ink: #1a1f2b;
@@ -100,7 +101,7 @@
 <div id="app">
   <header>
     <h1>Colorado CD-8 — Counties &amp; 2026 Ballot Drop Boxes</h1>
-    <p>Adams • Weld • Larimer &nbsp;|&nbsp; Built from official county GIS boundaries and Census TIGER/Line CD-8 geometry over an OpenStreetMap base layer</p>
+    <p>Adams • Weld • Larimer</p>
   </header>
   <div id="main">
     <div id="map"></div>
@@ -161,7 +162,7 @@
     </div>
   </div>
   <footer>
-    Data date: Sept 6, 2026. CD-8 boundary: U.S. Census Bureau TIGER/Line, 119th Congress (2025 vintage), Colorado. Adams County boundary: Adams County Colorado Government official GIS layer. Larimer County boundary: dissolved from Larimer County's own Board of County Commissioners (BOCC) district layer. Weld County boundary: Weld County official GIS open-data boundary layer. Basemap: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors. Drop-box counts sourced from each county clerk's official elections page; Adams/Larimer point coordinates from each county's own Google My Maps export; Weld point coordinates supplied by user, not independently verified. Address search: Nominatim (geocoding) + OSRM (driving directions), both free public OSM-based services. <a href="./notes.html" target="_blank">More notes →</a>
+    Data date: Sept 6, 2026. <a href="./notes.html" target="_blank">More notes →</a>
   </footer>
 </div>
 
@@ -511,9 +512,22 @@ function buildRouteLayer(routeLetter) {
   routeLayersBuilt[routeLetter] = true;
 
   if (routeLines[routeLetter]) {
-    L.geoJSON(routeLines[routeLetter], {
+    const lineLayer = L.geoJSON(routeLines[routeLetter], {
       style: { color: routeColors[routeLetter], weight: 5, opacity: 0.9 }
     }).addTo(routeLayers[routeLetter]);
+    if (typeof L.polylineDecorator === 'function') {
+      lineLayer.eachLayer(polyline => {
+        L.polylineDecorator(polyline, {
+          patterns: [{
+            offset: '5%', repeat: '8%',
+            symbol: L.Symbol.arrowHead({
+              pixelSize: 10, polygon: false,
+              pathOptions: { color: routeColors[routeLetter], weight: 3, opacity: 0.9 }
+            })
+          }]
+        }).addTo(routeLayers[routeLetter]);
+      });
+    }
   }
 
   const stopsForRoute = rollingMediaStops.filter(s => s.instances.some(i => i.route === routeLetter));
