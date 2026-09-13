@@ -222,19 +222,41 @@ const cd8Layer = L.geoJSON(cd8Data, {
   }
 }).addTo(map);
 
+function ballotBoxIcon(accent, uncertain) {
+  const stroke = uncertain ? '#f59e0b' : accent;
+  const w = uncertain ? 30 : 26;
+  const h = Math.round(w * 34 / 26);
+  return L.divIcon({
+    className: '',
+    html: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 34" width="${w}" height="${h}" style="filter:drop-shadow(0 1px 2px rgba(0,0,0,0.4));">
+      <rect x="2" y="2" width="22" height="30" rx="2" fill="#f4f4f2" stroke="${stroke}" stroke-width="1.6"/>
+      <rect x="2" y="2" width="22" height="10" rx="2" fill="#b91c1c"/>
+      <rect x="2" y="10" width="22" height="2" fill="#b91c1c"/>
+      <rect x="2" y="23" width="22" height="9" rx="2" fill="${stroke}"/>
+      <rect x="2" y="23" width="22" height="2" fill="${stroke}"/>
+      <rect x="7" y="4.5" width="12" height="2" rx="1" fill="#fff" opacity="0.95"/>
+      <g transform="translate(5,13)">
+        <rect x="0" y="0" width="16" height="9" fill="#b91c1c"/>
+        <rect x="0" y="1.3" width="16" height="1.3" fill="#fff"/>
+        <rect x="0" y="3.9" width="16" height="1.3" fill="#fff"/>
+        <rect x="0" y="6.5" width="16" height="1.3" fill="#fff"/>
+        <rect x="0" y="0" width="6.4" height="5.2" fill="#1d4ed8"/>
+      </g>
+    </svg>`,
+    iconSize: [w, h],
+    iconAnchor: [w/2, h]
+  });
+}
+
 const adamsDropboxLayer = L.geoJSON(adamsDropboxData, {
-  pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-    radius: 6, fillColor: '#1d4ed8', color: '#fff', weight: 1.5, fillOpacity: 0.9
-  }),
+  pointToLayer: (feature, latlng) => L.marker(latlng, { icon: ballotBoxIcon('#1d4ed8', false) }),
   onEachFeature: (f, layer) => {
     layer.bindPopup(`<b>${f.properties.name}</b><br>${f.properties.city}, Adams County<br><span style="color:#666;font-size:12px">${f.properties.note}</span>`);
   }
 }).addTo(map);
 
 const larimerDropboxLayer = L.geoJSON(larimerDropboxData, {
-  pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-    radius: 6, fillColor: '#c2410c', color: '#fff', weight: 1.5, fillOpacity: 0.9
-  }),
+  pointToLayer: (feature, latlng) => L.marker(latlng, { icon: ballotBoxIcon('#c2410c', false) }),
   onEachFeature: (f, layer) => {
     const drive = f.properties.drive_up === 'Yes' ? 'Drive-up accessible' : 'Walk-up';
     layer.bindPopup(`<b>${f.properties.name}</b><br>${f.properties.address}, ${f.properties.city}<br><span style="color:#666;font-size:12px">${drive} · Larimer County · Confirmed for Nov 3, 2026</span>`);
@@ -244,11 +266,7 @@ const larimerDropboxLayer = L.geoJSON(larimerDropboxData, {
 const weldDropboxLayer = L.geoJSON(weldDropboxData, {
   pointToLayer: (feature, latlng) => {
     const uncertain = (feature.properties.Coordinate_status || '').toLowerCase().includes('verify');
-    return L.circleMarker(latlng, {
-      radius: uncertain ? 7 : 6,
-      fillColor: uncertain ? '#f59e0b' : '#0f766e',
-      color: '#fff', weight: uncertain ? 2.5 : 1.5, fillOpacity: 0.9
-    });
+    return L.marker(latlng, { icon: ballotBoxIcon('#0f766e', uncertain) });
   },
   onEachFeature: (f, layer) => {
     const status = f.properties.Coordinate_status || '';
