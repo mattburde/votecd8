@@ -516,7 +516,7 @@ function buildRouteLayer(routeLetter) {
 
   if (routeLines[routeLetter]) {
     L.geoJSON(routeLines[routeLetter], {
-      style: { color: routeColors[routeLetter], weight: 4, opacity: 0.85 }
+      style: { color: routeColors[routeLetter], weight: 5, opacity: 0.9 }
     }).addTo(routeLayers[routeLetter]);
   }
 
