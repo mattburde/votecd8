@@ -498,93 +498,37 @@ document.getElementById('address-input').addEventListener('keydown', e => {
 
 
 // ---------- Rolling Outdoor Media — Wave 1 Driver Schedule (CD-8, Sep 16-22 2026) ----------
+// Coordinates below were geocoded once (via Google Maps) and baked in directly —
+// no live geocoding dependency, so this layer works instantly and offline-reliably.
 
-const rollingMediaStops = [{"id": "hwy7-washington", "address": "HWY 7 and Washington St, Thornton, CO 80023", "label": "HWY 7 & Washington St", "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "START. Screens on, disclaimer check, then roll. Paved apron on the NORTH side. If blocked, use a big box lot south on Washington St."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "START. Same setup \u2014 Washington St corridor on a weekday, build afternoon around southbound commute."}]}, {"id": "orchard-town-center", "address": "14697 Delaware St, Westminster, CO 80023", "label": "Orchard Town Center", "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "Mall. Work the ring road and the Orchard Parkway frontage."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "Mall. Work the ring road and the Orchard Parkway frontage."}]}, {"id": "120th-washington", "address": "120th Ave and Washington St, Thornton, CO 80233", "label": "120th Ave & Washington St", "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "Target lot or the BMO Bank lot."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "Target lot or the BMO Bank lot."}]}, {"id": "104th-washington", "address": "104th Ave and Washington St, Northglenn, CO 80233", "label": "104th Ave & Washington St", "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "King Soopers lot next to 104th Ave."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "King Soopers lot next to 104th Ave."}]}, {"id": "60th-dexter", "address": "E 60th Ave and Dexter St, Commerce City, CO 80022", "label": "E 60th Ave & Dexter St (HWY 6)", "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "Dirt parking lane on Dexter St near the 60th Ave/HWY 6 intersection."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "Dirt lane gets soft after rain \u2014 use 60th Ave frontage if churned up."}]}, {"id": "8th-10th-greeley", "address": "8th Ave and 10th St, Greeley, CO 80631", "label": "8th Ave & 10th St", "instances": [{"route": "D", "day": "Thu 9/17", "time": "9:00 AM\u20135:00 PM", "note": "START. Downtown Greeley on the US 85 business spine."}, {"route": "D", "day": "Tue 9/22", "time": "9:00 AM\u20135:00 PM", "note": "START. Last day of Wave 1 \u2014 work the Brighton end harder on the way back north."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "Downtown Greeley on the US 85 business spine."}]}, {"id": "hwy85-bromley", "address": "S Kuner Rd and Bromley Ln, Brighton, CO 80601", "label": "HWY 85 & Bromley Ln", "instances": [{"route": "D", "day": "Thu 9/17", "time": "9:00 AM\u20135:00 PM", "note": "Dirt parking area on the east side of S Kuner Rd, northeast of the intersection."}, {"route": "D", "day": "Tue 9/22", "time": "9:00 AM\u20135:00 PM", "note": "Dirt parking area on the east side of S Kuner Rd."}]}, {"id": "120th-buckley", "address": "120th Ave and Buckley Rd, Brighton, CO 80022", "label": "120th Ave & Buckley Rd", "instances": [{"route": "D", "day": "Thu 9/17", "time": "9:00 AM\u20135:00 PM", "note": "Dirt apron at the northeast corner."}, {"route": "D", "day": "Tue 9/22", "time": "9:00 AM\u20135:00 PM", "note": "Dirt apron at the northeast corner."}]}, {"id": "104th-us85", "address": "E 104th Ave and US Highway 85, Henderson, CO 80640", "label": "E 104th Ave & US 85", "instances": [{"route": "D", "day": "Thu 9/17", "time": "9:00 AM\u20135:00 PM", "note": "South end of the US 85 corridor. Turn here and work back north."}, {"route": "D", "day": "Tue 9/22", "time": "9:00 AM\u20135:00 PM", "note": "South end of the US 85 corridor."}]}, {"id": "colorado-blvd-6th", "address": "Colorado Blvd and 6th St, Dacono, CO 80514", "label": "Colorado Blvd at 6th St", "instances": [{"route": "B", "day": "Fri 9/18", "time": "9:30 AM\u20135:30 PM", "note": "START 9:30 AM. Apron on the WEST side of Colorado Blvd, south of HWY 52, opposite 6th St."}]}, {"id": "firestone-colorado", "address": "Firestone Blvd and Colorado Blvd, Firestone, CO 80504", "label": "Firestone Blvd & Colorado Blvd", "instances": [{"route": "B", "day": "Fri 9/18", "time": "9:30 AM\u20135:30 PM", "note": "Walgreens lot, or the Home Depot across the street. Shows as HWY 119 on some maps."}]}, {"id": "hays-market", "address": "S 1st St and Johnstown Center Dr, Johnstown, CO 80534", "label": "Hays Market", "instances": [{"route": "B", "day": "Fri 9/18", "time": "9:30 AM\u20135:30 PM", "note": "Park as close to S 1st St as possible for visibility off the main road."}, {"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "\u23f0 BE HERE BY 11:30 AM \u2014 hard time."}]}, {"id": "mountain-ave-4th", "address": "Mountain Ave and N 4th St, Berthoud, CO 80513", "label": "Mountain Ave & N 4th St", "instances": [{"route": "B", "day": "Fri 9/18", "time": "9:30 AM\u20135:30 PM", "note": "\u23f0 BE HERE BY 4:00 PM \u2014 hard time. Call contact 1 hour before arrival. Parallel park eastbound, south side of Mountain Ave, in front of BMO Bank."}]}, {"id": "lincoln-park", "address": "9th Ave and 9th St, Greeley, CO 80631", "label": "Lincoln Park", "instances": [{"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "START. Downtown core. Farmers Market runs 8 AM\u2013noon Saturdays."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "Downtown core."}]}, {"id": "hwy34-65th", "address": "US Highway 34 and 65th Ave, Greeley, CO 80634", "label": "US-34 & 65th Ave", "instances": [{"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "\u23f0 BE HERE BY 1:00 PM \u2014 hard time. Northeast corner, dirt lot by Pope Farms Produce."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "START. Northeast corner, dirt lot by Pope Farms Produce."}]}, {"id": "king-soopers-71st", "address": "10th St and 71st Ave, Greeley, CO 80634", "label": "King Soopers (71st Ave)", "instances": [{"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "Park in the King Soopers lot."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "Park in the King Soopers lot."}]}, {"id": "20th-11th-greeley", "address": "20th St and 11th Ave, Greeley, CO 80639", "label": "20th St & 11th Ave", "instances": [{"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "Work public streets around Nottingham Field. Do NOT enter the lot \u2014 not cleared by client."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "Work public streets around the stadium."}]}];
+const rollingMediaStops = [{"id": "hwy7-washington", "address": "HWY 7 and Washington St, Thornton, CO 80023", "label": "HWY 7 & Washington St", "lat": 39.9985577, "lon": -104.9741672, "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "START. Screens on, disclaimer check, then roll. Paved apron on the NORTH side. If blocked, use a big box lot south on Washington St."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "START. Same setup \u2014 Washington St corridor on a weekday, build afternoon around southbound commute."}]}, {"id": "orchard-town-center", "address": "14697 Delaware St, Westminster, CO 80023", "label": "Orchard Town Center", "lat": 39.9622568, "lon": -104.9921907, "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "Mall. Work the ring road and the Orchard Parkway frontage."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "Mall. Work the ring road and the Orchard Parkway frontage."}]}, {"id": "120th-washington", "address": "120th Ave and Washington St, Thornton, CO 80233", "label": "120th Ave & Washington St", "lat": 39.914012, "lon": -104.9779753, "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "Target lot or the BMO Bank lot."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "Target lot or the BMO Bank lot."}]}, {"id": "104th-washington", "address": "104th Ave and Washington St, Northglenn, CO 80233", "label": "104th Ave & Washington St", "lat": 39.8850667, "lon": -104.9778175, "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "King Soopers lot next to 104th Ave."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "King Soopers lot next to 104th Ave."}]}, {"id": "60th-dexter", "address": "E 60th Ave and Dexter St, Commerce City, CO 80022", "label": "E 60th Ave & Dexter St (HWY 6)", "lat": 39.8054919, "lon": -104.9319793, "instances": [{"route": "C", "day": "Wed 9/16", "time": "10:00 AM\u20136:00 PM", "note": "Dirt parking lane on Dexter St near the 60th Ave/HWY 6 intersection."}, {"route": "C", "day": "Mon 9/21", "time": "10:00 AM\u20136:00 PM", "note": "Dirt lane gets soft after rain \u2014 use 60th Ave frontage if churned up."}]}, {"id": "8th-10th-greeley", "address": "8th Ave and 10th St, Greeley, CO 80631", "label": "8th Ave & 10th St", "lat": 40.4225288, "lon": -104.6909019, "instances": [{"route": "D", "day": "Thu 9/17", "time": "9:00 AM\u20135:00 PM", "note": "START. Downtown Greeley on the US 85 business spine."}, {"route": "D", "day": "Tue 9/22", "time": "9:00 AM\u20135:00 PM", "note": "START. Last day of Wave 1 \u2014 work the Brighton end harder on the way back north."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "Downtown Greeley on the US 85 business spine."}]}, {"id": "hwy85-bromley", "address": "S Kuner Rd and Bromley Ln, Brighton, CO 80601", "label": "HWY 85 & Bromley Ln", "lat": 39.9723851, "lon": -104.8276948, "instances": [{"route": "D", "day": "Thu 9/17", "time": "9:00 AM\u20135:00 PM", "note": "Dirt parking area on the east side of S Kuner Rd, northeast of the intersection."}, {"route": "D", "day": "Tue 9/22", "time": "9:00 AM\u20135:00 PM", "note": "Dirt parking area on the east side of S Kuner Rd."}]}, {"id": "120th-buckley", "address": "120th Ave and Buckley Rd, Brighton, CO 80022", "label": "120th Ave & Buckley Rd", "lat": 39.9143964, "lon": -104.7901047, "instances": [{"route": "D", "day": "Thu 9/17", "time": "9:00 AM\u20135:00 PM", "note": "Dirt apron at the northeast corner."}, {"route": "D", "day": "Tue 9/22", "time": "9:00 AM\u20135:00 PM", "note": "Dirt apron at the northeast corner."}]}, {"id": "104th-us85", "address": "E 104th Ave and US Highway 85, Henderson, CO 80640", "label": "E 104th Ave & US 85", "lat": 39.8853184, "lon": -104.8817036, "instances": [{"route": "D", "day": "Thu 9/17", "time": "9:00 AM\u20135:00 PM", "note": "South end of the US 85 corridor. Turn here and work back north."}, {"route": "D", "day": "Tue 9/22", "time": "9:00 AM\u20135:00 PM", "note": "South end of the US 85 corridor."}]}, {"id": "colorado-blvd-6th", "address": "Colorado Blvd and 6th St, Dacono, CO 80514", "label": "Colorado Blvd at 6th St", "lat": 40.0859997, "lon": -104.9421472, "instances": [{"route": "B", "day": "Fri 9/18", "time": "9:30 AM\u20135:30 PM", "note": "START 9:30 AM. Apron on the WEST side of Colorado Blvd, south of HWY 52, opposite 6th St."}]}, {"id": "firestone-colorado", "address": "Firestone Blvd and Colorado Blvd, Firestone, CO 80504", "label": "Firestone Blvd & Colorado Blvd", "lat": 40.1607046, "lon": -104.9417647, "instances": [{"route": "B", "day": "Fri 9/18", "time": "9:30 AM\u20135:30 PM", "note": "Walgreens lot, or the Home Depot across the street. Shows as HWY 119 on some maps."}]}, {"id": "hays-market", "address": "S 1st St and Johnstown Center Dr, Johnstown, CO 80534", "label": "Hays Market", "lat": 40.3347129, "lon": -104.9087695, "instances": [{"route": "B", "day": "Fri 9/18", "time": "9:30 AM\u20135:30 PM", "note": "Park as close to S 1st St as possible for visibility off the main road."}, {"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "\u23f0 BE HERE BY 11:30 AM \u2014 hard time."}]}, {"id": "mountain-ave-4th", "address": "Mountain Ave and N 4th St, Berthoud, CO 80513", "label": "Mountain Ave & N 4th St", "lat": 40.3051768, "lon": -105.0797722, "instances": [{"route": "B", "day": "Fri 9/18", "time": "9:30 AM\u20135:30 PM", "note": "\u23f0 BE HERE BY 4:00 PM \u2014 hard time. Call contact 1 hour before arrival. Parallel park eastbound, south side of Mountain Ave, in front of BMO Bank."}]}, {"id": "lincoln-park", "address": "9th Ave and 9th St, Greeley, CO 80631", "label": "Lincoln Park", "lat": 40.4238673, "lon": -104.6925711, "instances": [{"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "START. Downtown core. Farmers Market runs 8 AM\u2013noon Saturdays."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "Downtown core."}]}, {"id": "hwy34-65th", "address": "US Highway 34 and 65th Ave, Greeley, CO 80634", "label": "US-34 & 65th Ave", "lat": 40.3922088, "lon": -104.7845393, "instances": [{"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "\u23f0 BE HERE BY 1:00 PM \u2014 hard time. Northeast corner, dirt lot by Pope Farms Produce."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "START. Northeast corner, dirt lot by Pope Farms Produce."}]}, {"id": "king-soopers-71st", "address": "10th St and 71st Ave, Greeley, CO 80634", "label": "King Soopers (71st Ave)", "lat": 40.421372, "lon": -104.7943704, "instances": [{"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "Park in the King Soopers lot."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "Park in the King Soopers lot."}]}, {"id": "20th-11th-greeley", "address": "20th St and 11th Ave, Greeley, CO 80639", "label": "20th St & 11th Ave", "lat": 40.4062167, "lon": -104.6965574, "instances": [{"route": "A", "day": "Sat 9/19", "time": "9:30 AM\u20135:30 PM", "note": "Work public streets around Nottingham Field. Do NOT enter the lot \u2014 not cleared by client."}, {"route": "A", "day": "Sun 9/20", "time": "10:00 AM\u20136:00 PM", "note": "Work public streets around the stadium."}]}];
 
 const routeColors = { A: '#dc2626', B: '#0ea5e9', C: '#65a30d', D: '#c026d3' };
-const routeLabels = {
-  A: 'Route A · Greeley metro loop',
-  B: 'Route B · North corridor, Colorado Blvd spine',
-  C: 'Route C · South Adams, Washington St corridor',
-  D: 'Route D · US 85 corridor, Greeley to Henderson'
-};
 
 const routeLayers = { A: L.layerGroup(), B: L.layerGroup(), C: L.layerGroup(), D: L.layerGroup() };
-const geocodedStops = {}; // id -> {lat, lon} once resolved
-let geocodeQueue = Promise.resolve(); // serializes Nominatim calls to respect 1 req/sec
+let routeLayersBuilt = { A: false, B: false, C: false, D: false };
 
-function geocodeAddressOnce(address) {
-  return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&countrycodes=us&limit=1`, {
-    headers: { 'Accept': 'application/json' }
-  })
-    .then(r => r.ok ? r.json() : [])
-    .then(data => (data && data.length > 0) ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null)
-    .catch(() => null);
-}
+function buildRouteLayer(routeLetter) {
+  if (routeLayersBuilt[routeLetter]) return;
+  routeLayersBuilt[routeLetter] = true;
 
-function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-function geocodeAddress(address) {
-  geocodeQueue = geocodeQueue.then(async () => {
-    let result = await geocodeAddressOnce(address);
-    if (!result) { await wait(2000); result = await geocodeAddressOnce(address); }
-    if (!result) { await wait(4000); result = await geocodeAddressOnce(address); }
-    await wait(1500);
-    return result;
-  });
-  return geocodeQueue;
-}
-
-async function ensureRouteGeocoded(routeLetter) {
-  const statusEl = document.getElementById('route-media-status-' + routeLetter);
   const stopsForRoute = rollingMediaStops.filter(s => s.instances.some(i => i.route === routeLetter));
-  const toGeocode = stopsForRoute.filter(s => !geocodedStops[s.id]);
-
-  if (toGeocode.length > 0 && statusEl) {
-    statusEl.textContent = `Looking up ${toGeocode.length} location${toGeocode.length === 1 ? '' : 's'}…`;
-  }
-
-  let succeeded = 0, failed = 0;
-  for (const stop of toGeocode) {
-    let result = null;
-    try {
-      result = await geocodeAddress(stop.address);
-    } catch (err) {
-      result = null;
-    }
-    if (result) {
-      succeeded++;
-      geocodedStops[stop.id] = result;
-      const marker = L.circleMarker([result.lat, result.lon], {
-        radius: 7, color: '#fff', weight: 1.5, fillColor: routeColors[routeLetter], fillOpacity: 0.9
-      });
-      const popupLines = stop.instances
-        .filter(i => i.route === routeLetter)
-        .map(i => `<b>${i.day}</b> · ${i.time}<br>${i.note}`)
-        .join('<hr style="margin:5px 0;border:none;border-top:1px dashed #ddd;">');
-      marker.bindPopup(`<b>${stop.label}</b><br><span style="color:#666;font-size:11px">${stop.address}</span><hr style="margin:5px 0;border:none;border-top:1px solid #ddd;">${popupLines}`);
-      routeLayers[routeLetter].addLayer(marker);
-    } else {
-      failed++;
-    }
-  }
-
-  if (statusEl) {
-    if (toGeocode.length === 0) {
-      statusEl.textContent = '';
-    } else if (failed === toGeocode.length) {
-      statusEl.innerHTML = '<span style="color:#dc2626;">⚠ Could not look up locations — network/geocoding request failed or was blocked. Try opening this page directly in a browser tab instead of a preview.</span>';
-    } else if (failed > 0) {
-      statusEl.innerHTML = `<span style="color:#b45309;">${succeeded} found, ${failed} failed to geocode</span>`;
-    } else {
-      statusEl.textContent = '';
-    }
-  }
+  stopsForRoute.forEach(stop => {
+    const marker = L.circleMarker([stop.lat, stop.lon], {
+      radius: 7, color: '#fff', weight: 1.5, fillColor: routeColors[routeLetter], fillOpacity: 0.9
+    });
+    const popupLines = stop.instances
+      .filter(i => i.route === routeLetter)
+      .map(i => `<b>${i.day}</b> · ${i.time}<br>${i.note}`)
+      .join('<hr style="margin:5px 0;border:none;border-top:1px dashed #ddd;">');
+    marker.bindPopup(`<b>${stop.label}</b><br><span style="color:#666;font-size:11px">${stop.address}</span><hr style="margin:5px 0;border:none;border-top:1px solid #ddd;">${popupLines}`);
+    routeLayers[routeLetter].addLayer(marker);
+  });
 }
 
-async function toggleRouteLayer(routeLetter, checked) {
+function toggleRouteLayer(routeLetter, checked) {
+  buildRouteLayer(routeLetter);
   if (checked) {
-    await ensureRouteGeocoded(routeLetter);
     map.addLayer(routeLayers[routeLetter]);
   } else {
     map.removeLayer(routeLayers[routeLetter]);
@@ -595,7 +539,6 @@ async function toggleRouteLayer(routeLetter, checked) {
   const el = document.getElementById('toggle-route-' + letter);
   if (el) el.addEventListener('change', e => toggleRouteLayer(letter, e.target.checked));
 });
-
 </script>
 </body>
 </html>
