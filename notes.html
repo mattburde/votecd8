@@ -22,12 +22,15 @@
   h1 { font-size:22px; margin:0 0 4px; }
   .subtitle { color:var(--muted); font-size:13px; margin-bottom:32px; }
   h2 { font-size:15px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:36px 0 12px; border-bottom:1px solid #e4e2dc; padding-bottom:6px; }
+  p { font-size:14px; }
   .entry { padding:10px 0; border-bottom:1px dashed #eee; }
   .entry:last-child { border-bottom:none; }
   .entry b { display:block; }
   .addr { color:#666; font-size:13.5px; }
   .warn { color:#b45309; font-size:12.5px; font-weight:600; margin-top:4px; }
   .placeholder { color:var(--muted); font-size:13.5px; font-style:italic; padding:16px 0; }
+  .links a { display:block; margin-top:4px; font-size:14px; }
+  .ruleline { color:#b45309; font-size:13.5px; font-weight:600; }
 </style>
 </head>
 <body>
@@ -35,8 +38,19 @@
   <h1>Notes</h1>
   <p class="subtitle">Colorado CD-8 — Counties &amp; 2026 Ballot Drop Boxes</p>
 
+  <h2>Address search</h2>
+  <p>Geocoding by <a href="https://nominatim.openstreetmap.org" target="_blank">OpenStreetMap Nominatim</a>; routing by <a href="https://project-osrm.org" target="_blank">OSRM</a> (both free, open-source). Only searches <em>mapped</em> drop boxes — confirm with your county before relying on it, especially for Adams/Weld's provisional locations.</p>
+
+  <h2>Drop box list status</h2>
+  <p>Larimer's count and locations are confirmed for the Nov 3, 2026 General Election. Adams and Weld are carried over from each county's June 2026 Primary list — their Nov. 2026 lists were not yet published as of Sept. 6, 2026.</p>
+  <div class="links">
+    <a href="https://adamscountyco.gov/our-county/elected-officials/clerk-recorder/adams-county-elections/2026-elections/ballot-drop-box-locations/" target="_blank">Adams County drop box list →</a>
+    <a href="https://www.weld.gov/files/sharedassets/public/v/1/departments/clerk-and-recorder/documents/elections/26-primary-voting-locations-and-drop-off.pdf" target="_blank">Weld County drop box list →</a>
+    <a href="https://www.larimer.gov/clerk/elections/voting-and-drop-locations" target="_blank">Larimer County drop box list →</a>
+  </div>
+
   <h2>Weld County — locations not yet mapped</h2>
-  <p style="font-size:13.5px;color:var(--muted);">These 5 of the 21 Weld drop boxes (June 2026 Primary list) had no coordinates in the data provided, so they aren't plotted on the map.</p>
+  <p style="font-size:13.5px;color:var(--muted);">These 5 of the 21 Weld drop boxes had no coordinates in the data provided, so they aren't plotted on the map.</p>
   <div class="entry">
     <b>Briggsdale School District (RE-10J)</b>
     <span class="addr">420 Main St, Briggsdale</span>
@@ -58,6 +72,10 @@
     <b>Weld County Election Office</b>
     <span class="addr">1250 H St, Greeley</span>
   </div>
+
+  <h2>Rolling Outdoor Media</h2>
+  <p>Mobile billboard routes for CD-8. Stops are geocoded from street/intersection addresses on load (first toggle may take a few seconds); connecting paths aren't shown since only stop addresses were provided, not exact driven routes.</p>
+  <p class="ruleline">Colorado rule: stay 100 feet from any building where a polling location is posted, measured from the building.</p>
 
   <h2>Other notes</h2>
   <p class="placeholder">More notes on data sources, caveats, or things to double-check can go here.</p>
