@@ -131,7 +131,6 @@
           <div id="radius-list-items"></div>
         </div>
       </div>
-      <p style="font-size:10.5px;color:var(--muted);margin-top:6px;">Geocoding by <a href="https://nominatim.openstreetmap.org" target="_blank">OpenStreetMap Nominatim</a>; routing by <a href="https://project-osrm.org" target="_blank">OSRM</a> (both free, open-source). Only searches <em>mapped</em> drop boxes — confirm with your county before relying on it, especially for Adams/Weld's provisional locations.</p>
 
       <h2>Layers</h2>
       <div class="toggle-row"><input type="checkbox" id="toggle-cd8" checked><label for="toggle-cd8"><span class="swatch" style="background:var(--cd8)"></span>CD-8 boundary</label></div>
@@ -146,22 +145,11 @@
       <div class="row"><span class="name"><span class="swatch" style="background:var(--larimer)"></span>Larimer</span><span class="count">24 <span class="tag confirmed">Nov 2026</span> <span class="tag mapped">mapped</span></span></div>
       <div class="row"><span class="name"><span class="swatch" style="background:var(--adams)"></span>Adams</span><span class="count">32 <span class="tag mapped">mapped</span> <span class="tag provisional">primary</span></span></div>
       <div class="row"><span class="name"><span class="swatch" style="background:var(--weld)"></span>Weld</span><span class="count">21 <span class="tag mapped">16 mapped</span> <span class="tag provisional">primary</span></span></div>
-      <p style="font-size:11px;color:var(--muted);margin-top:8px;">Larimer's count and locations are confirmed for the Nov 3, 2026 General Election. Adams and Weld are carried over from each county's June 2026 Primary list — their Nov. 2026 lists were not yet published as of Sept. 6, 2026.</p>
-      <div style="font-size:11.5px; margin-top:8px;">
-        <a href="https://adamscountyco.gov/our-county/elected-officials/clerk-recorder/adams-county-elections/2026-elections/ballot-drop-box-locations/" target="_blank">Adams County drop box list →</a><br>
-        <a href="https://www.weld.gov/files/sharedassets/public/v/1/departments/clerk-and-recorder/documents/elections/26-primary-voting-locations-and-drop-off.pdf" target="_blank">Weld County drop box list →</a><br>
-        <a href="https://www.larimer.gov/clerk/elections/voting-and-drop-locations" target="_blank">Larimer County drop box list →</a>
-      </div>
-      <div style="font-size:11.5px; margin-top:10px; padding-top:10px; border-top:1px dashed #eee;">
+      <div style="font-size:11.5px; margin-top:8px; padding-top:10px; border-top:1px dashed #eee;">
         <a href="https://ballottrax.coloradosos.gov/voter/" target="_blank"><b>Track your ballot on BallotTrax →</b></a>
       </div>
 
-      <h2>Weld County — 5 locations still not mapped</h2>
-      <p style="font-size:11px;color:var(--muted);margin-bottom:8px;">These 5 of the 21 Weld drop boxes had no coordinates in the data provided, so they aren't plotted. <a href="./notes.html" target="_blank">See notes for details →</a></p>
-
-
-      <h2>Wave 1 Driver Schedule (Sep 16–22)</h2>
-      <p style="font-size:11px;color:var(--muted);margin-bottom:6px;">Rolling Outdoor Media — mobile billboard routes for CD-8. Stops are geocoded from street/intersection addresses on load (first toggle may take a few seconds); connecting paths aren't shown since only stop addresses were provided, not exact driven routes.</p>
+      <h2>Rolling Outdoor Media Schedule (Sep 16–22)</h2>
       <div class="toggle-row"><input type="checkbox" id="toggle-route-A"><label for="toggle-route-A"><span class="swatch" style="background:#dc2626"></span>Route A — Greeley metro loop</label></div>
       <div id="route-media-status-A" style="font-size:10.5px;color:var(--muted);margin-left:20px;"></div>
       <div class="toggle-row"><input type="checkbox" id="toggle-route-B"><label for="toggle-route-B"><span class="swatch" style="background:#0ea5e9"></span>Route B — North corridor</label></div>
@@ -170,11 +158,10 @@
       <div id="route-media-status-C" style="font-size:10.5px;color:var(--muted);margin-left:20px;"></div>
       <div class="toggle-row"><input type="checkbox" id="toggle-route-D"><label for="toggle-route-D"><span class="swatch" style="background:#c026d3"></span>Route D — US 85 corridor</label></div>
       <div id="route-media-status-D" style="font-size:10.5px;color:var(--muted);margin-left:20px;"></div>
-      <p style="font-size:10px;color:#b45309;margin-top:6px;">Colorado rule: stay 100 feet from any building where a polling location is posted, measured from the building.</p>
     </div>
   </div>
   <footer>
-    Data date: Sept 6, 2026. CD-8 boundary: U.S. Census Bureau TIGER/Line, 119th Congress (2025 vintage), Colorado. Adams County boundary: Adams County Colorado Government official GIS layer. Larimer County boundary: dissolved from Larimer County's own Board of County Commissioners (BOCC) district layer. Weld County boundary: Weld County official GIS open-data boundary layer. Basemap: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors. Drop-box counts sourced from each county clerk's official elections page; Adams/Larimer point coordinates from each county's own Google My Maps export; Weld point coordinates supplied by user, not independently verified. Address search: Nominatim (geocoding) + OSRM (driving directions), both free public OSM-based services.
+    Data date: Sept 6, 2026. CD-8 boundary: U.S. Census Bureau TIGER/Line, 119th Congress (2025 vintage), Colorado. Adams County boundary: Adams County Colorado Government official GIS layer. Larimer County boundary: dissolved from Larimer County's own Board of County Commissioners (BOCC) district layer. Weld County boundary: Weld County official GIS open-data boundary layer. Basemap: &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a> contributors. Drop-box counts sourced from each county clerk's official elections page; Adams/Larimer point coordinates from each county's own Google My Maps export; Weld point coordinates supplied by user, not independently verified. Address search: Nominatim (geocoding) + OSRM (driving directions), both free public OSM-based services. <a href="./notes.html" target="_blank">More notes →</a>
   </footer>
 </div>
 
