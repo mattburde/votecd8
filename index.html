@@ -513,17 +513,25 @@ const routeLayers = { A: L.layerGroup(), B: L.layerGroup(), C: L.layerGroup(), D
 const geocodedStops = {}; // id -> {lat, lon} once resolved
 let geocodeQueue = Promise.resolve(); // serializes Nominatim calls to respect 1 req/sec
 
+function geocodeAddressOnce(address) {
+  return fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&countrycodes=us&limit=1`, {
+    headers: { 'Accept': 'application/json' }
+  })
+    .then(r => r.ok ? r.json() : [])
+    .then(data => (data && data.length > 0) ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null)
+    .catch(() => null);
+}
+
+function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
 function geocodeAddress(address) {
-  geocodeQueue = geocodeQueue.then(() => new Promise(resolve => {
-    fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&countrycodes=us&limit=1`, {
-      headers: { 'Accept': 'application/json' }
-    })
-      .then(r => r.ok ? r.json() : [])
-      .then(data => {
-        setTimeout(() => resolve(data && data.length > 0 ? { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) } : null), 1100);
-      })
-      .catch(() => setTimeout(() => resolve(null), 1100));
-  }));
+  geocodeQueue = geocodeQueue.then(async () => {
+    let result = await geocodeAddressOnce(address);
+    if (!result) { await wait(2000); result = await geocodeAddressOnce(address); }
+    if (!result) { await wait(4000); result = await geocodeAddressOnce(address); }
+    await wait(1500);
+    return result;
+  });
   return geocodeQueue;
 }
 
