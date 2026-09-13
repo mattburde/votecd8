@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Notes — Colorado CD-8 Ballot Drop Box Map</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --ink: #1a1f2b;
+    --muted: #5b6472;
+    --paper: #fafaf8;
+    --cd8: #6d28d9;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:24px 20px 60px; max-width:680px; margin-left:auto; margin-right:auto;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--paper); color: var(--ink); line-height:1.5;
+  }
+  a { color: var(--cd8); }
+  a.back { display:inline-block; margin-bottom:20px; font-size:13px; text-decoration:none; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .subtitle { color:var(--muted); font-size:13px; margin-bottom:32px; }
+  h2 { font-size:15px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:36px 0 12px; border-bottom:1px solid #e4e2dc; padding-bottom:6px; }
+  .entry { padding:10px 0; border-bottom:1px dashed #eee; }
+  .entry:last-child { border-bottom:none; }
+  .entry b { display:block; }
+  .addr { color:#666; font-size:13.5px; }
+  .warn { color:#b45309; font-size:12.5px; font-weight:600; margin-top:4px; }
+  .placeholder { color:var(--muted); font-size:13.5px; font-style:italic; padding:16px 0; }
+</style>
+</head>
+<body>
+  <a class="back" href="./">← Back to map</a>
+  <h1>Notes</h1>
+  <p class="subtitle">Colorado CD-8 — Counties &amp; 2026 Ballot Drop Boxes</p>
+
+  <h2>Weld County — locations not yet mapped</h2>
+  <p style="font-size:13.5px;color:var(--muted);">These 5 of the 21 Weld drop boxes (June 2026 Primary list) had no coordinates in the data provided, so they aren't plotted on the map.</p>
+  <div class="entry">
+    <b>Briggsdale School District (RE-10J)</b>
+    <span class="addr">420 Main St, Briggsdale</span>
+  </div>
+  <div class="entry">
+    <b>Grover Town Hall</b>
+    <span class="addr">315 Chatoga Ave, Grover</span>
+  </div>
+  <div class="entry">
+    <b>Mead Community Center</b>
+    <span class="addr">242 Main St, Mead</span>
+    <div class="warn">⚠ current recreation listings also reference a newer 401 3rd St facility</div>
+  </div>
+  <div class="entry">
+    <b>UNC University Center</b>
+    <span class="addr">2101 10th Ave, Greeley</span>
+  </div>
+  <div class="entry">
+    <b>Weld County Election Office</b>
+    <span class="addr">1250 H St, Greeley</span>
+  </div>
+
+  <h2>Other notes</h2>
+  <p class="placeholder">More notes on data sources, caveats, or things to double-check can go here.</p>
+
+</body>
+</html>
