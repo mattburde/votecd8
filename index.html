@@ -514,8 +514,17 @@ function buildRouteLayer(routeLetter) {
 
   const stopsForRoute = rollingMediaStops.filter(s => s.instances.some(i => i.route === routeLetter));
   stopsForRoute.forEach(stop => {
-    const marker = L.circleMarker([stop.lat, stop.lon], {
-      radius: 7, color: '#fff', weight: 1.5, fillColor: routeColors[routeLetter], fillOpacity: 0.9
+    const color = routeColors[routeLetter];
+    const marker = L.marker([stop.lat, stop.lon], {
+      icon: L.divIcon({
+        className: '',
+        html: `<div style="
+          width:22px; height:22px; background:${color}; transform:rotate(45deg);
+          border:2px solid #fff; box-shadow:0 1px 4px rgba(0,0,0,0.4);
+          display:flex; align-items:center; justify-content:center; border-radius:4px;
+        "><span style="transform:rotate(-45deg); font-size:11px; line-height:1;">🚛</span></div>`,
+        iconSize: [22, 22], iconAnchor: [11, 11]
+      })
     });
     const popupLines = stop.instances
       .filter(i => i.route === routeLetter)
