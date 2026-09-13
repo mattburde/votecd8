@@ -105,7 +105,7 @@
   <div id="main">
     <div id="map"></div>
     <button id="mobile-toggle" onclick="toggleMobileView()">
-      <span>List</span>
+      <span>Options</span>
     </button>
     <div id="panel">
       <h2>Find drop boxes near an address</h2>
@@ -134,12 +134,12 @@
 
       <h2>Layers</h2>
       <div class="toggle-row"><input type="checkbox" id="toggle-cd8" checked><label for="toggle-cd8"><span class="swatch" style="background:var(--cd8)"></span>CD-8 boundary</label></div>
-      <div class="toggle-row"><input type="checkbox" id="toggle-county-adams" checked><label for="toggle-county-adams"><span class="swatch" style="background:var(--adams)"></span>Adams County boundary</label></div>
-      <div class="toggle-row"><input type="checkbox" id="toggle-county-weld" checked><label for="toggle-county-weld"><span class="swatch" style="background:var(--weld)"></span>Weld County boundary</label></div>
-      <div class="toggle-row"><input type="checkbox" id="toggle-county-larimer" checked><label for="toggle-county-larimer"><span class="swatch" style="background:var(--larimer)"></span>Larimer County boundary</label></div>
-      <div class="toggle-row"><input type="checkbox" id="toggle-adams-boxes" checked><label for="toggle-adams-boxes"><span class="swatch" style="background:var(--adams)"></span>Adams drop boxes (32, mapped)</label></div>
-      <div class="toggle-row"><input type="checkbox" id="toggle-larimer-boxes" checked><label for="toggle-larimer-boxes"><span class="swatch" style="background:var(--larimer)"></span>Larimer drop boxes (24, mapped)</label></div>
-      <div class="toggle-row"><input type="checkbox" id="toggle-weld-boxes" checked><label for="toggle-weld-boxes"><span class="swatch" style="background:var(--weld)"></span>Weld drop boxes (16 of 21, mapped)</label></div>
+      <div class="toggle-row"><input type="checkbox" id="toggle-county-adams"><label for="toggle-county-adams"><span class="swatch" style="background:var(--adams)"></span>Adams County boundary</label></div>
+      <div class="toggle-row"><input type="checkbox" id="toggle-county-weld"><label for="toggle-county-weld"><span class="swatch" style="background:var(--weld)"></span>Weld County boundary</label></div>
+      <div class="toggle-row"><input type="checkbox" id="toggle-county-larimer"><label for="toggle-county-larimer"><span class="swatch" style="background:var(--larimer)"></span>Larimer County boundary</label></div>
+      <div class="toggle-row"><input type="checkbox" id="toggle-adams-boxes"><label for="toggle-adams-boxes"><span class="swatch" style="background:var(--adams)"></span>Adams drop boxes (32, mapped)</label></div>
+      <div class="toggle-row"><input type="checkbox" id="toggle-larimer-boxes"><label for="toggle-larimer-boxes"><span class="swatch" style="background:var(--larimer)"></span>Larimer drop boxes (24, mapped)</label></div>
+      <div class="toggle-row"><input type="checkbox" id="toggle-weld-boxes"><label for="toggle-weld-boxes"><span class="swatch" style="background:var(--weld)"></span>Weld drop boxes (16 of 21, mapped)</label></div>
 
       <h2>Ballot drop boxes (24-hr)</h2>
       <div class="row"><span class="name"><span class="swatch" style="background:var(--larimer)"></span>Larimer</span><span class="count">24 <span class="tag confirmed">Nov 2026</span> <span class="tag mapped">mapped</span></span></div>
@@ -210,7 +210,7 @@ const countyLayers = {};
       fillOpacity: 0.25
     }),
     onEachFeature: (f, layer) => layer.bindPopup(countyPopup(f))
-  }).addTo(map);
+  });
 });
 
 const countiesLayer = L.featureGroup(Object.values(countyLayers));
@@ -253,7 +253,7 @@ const adamsDropboxLayer = L.geoJSON(adamsDropboxData, {
   onEachFeature: (f, layer) => {
     layer.bindPopup(`<b>Drop Box: ${f.properties.name}</b><br>${f.properties.city}, Adams County<br><span style="color:#666;font-size:12px">${f.properties.note}</span>`);
   }
-}).addTo(map);
+});
 
 const larimerDropboxLayer = L.geoJSON(larimerDropboxData, {
   pointToLayer: (feature, latlng) => L.marker(latlng, { icon: ballotBoxIcon('#c2410c', false) }),
@@ -261,7 +261,7 @@ const larimerDropboxLayer = L.geoJSON(larimerDropboxData, {
     const drive = f.properties.drive_up === 'Yes' ? 'Drive-up accessible' : 'Walk-up';
     layer.bindPopup(`<b>Drop Box: ${f.properties.name}</b><br>${f.properties.address}, ${f.properties.city}<br><span style="color:#666;font-size:12px">${drive} · Larimer County · Confirmed for Nov 3, 2026</span>`);
   }
-}).addTo(map);
+});
 
 const weldDropboxLayer = L.geoJSON(weldDropboxData, {
   pointToLayer: (feature, latlng) => {
@@ -275,7 +275,7 @@ const weldDropboxLayer = L.geoJSON(weldDropboxData, {
       : `<br><span style="color:#666;font-size:12px">${status}</span>`;
     layer.bindPopup(`<b>Drop Box: ${f.properties.Location}</b><br>${f.properties.Address}${warn}<br><span style="color:#666;font-size:12px">Weld County · June 2026 Primary list · user-supplied coordinates, not independently verified</span>`);
   }
-}).addTo(map);
+});
 
 L.control.scale({ metric: false, imperial: true }).addTo(map);
 
@@ -308,7 +308,7 @@ function toggleMobileView() {
   const btnLabel = document.querySelector('#mobile-toggle span');
   mainEl.classList.toggle('showing-list');
   const showingList = mainEl.classList.contains('showing-list');
-  btnLabel.textContent = showingList ? 'Map' : 'List';
+  btnLabel.textContent = showingList ? 'Map' : 'Options';
   if (!showingList) {
     // Map just became visible again — Leaflet needs to recheck its size
     setTimeout(() => map.invalidateSize(), 50);
