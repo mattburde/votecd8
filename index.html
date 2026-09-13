@@ -101,7 +101,7 @@
 <div id="app">
   <header>
     <h1>Colorado CD-8 — Counties &amp; 2026 Ballot Drop Boxes</h1>
-    <p>Adams • Weld • Larimer</p>
+    <p>Adams • Weld • Larimer &nbsp;|&nbsp; <a href="./notes.html" target="_blank">Notes →</a></p>
   </header>
   <div id="main">
     <div id="map"></div>
@@ -519,7 +519,7 @@ function buildRouteLayer(routeLetter) {
       lineLayer.eachLayer(polyline => {
         L.polylineDecorator(polyline, {
           patterns: [{
-            offset: '5%', repeat: '8%',
+            offset: '15%', repeat: '15%',
             symbol: L.Symbol.arrowHead({
               pixelSize: 10, polygon: false,
               pathOptions: { color: routeColors[routeLetter], weight: 3, opacity: 0.9 }
