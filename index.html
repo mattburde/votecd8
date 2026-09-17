@@ -207,12 +207,17 @@ const countyLayers = {};
 
 const countiesLayer = L.featureGroup(Object.values(countyLayers));
 
+// Not .addTo(map) here -- bindLayerToggle() below is what adds it (like
+// every other layer), so it goes through setLayerVisible()'s
+// invalidateSize()-before-first-add. Adding it here too would make that
+// first addLayer() call a no-op (Leaflet skips re-adding an already-present
+// layer), silently losing that protection for this one layer.
 const cd8Layer = L.geoJSON(cd8Data, {
   style: { color: '#4c1d95', weight: 3.5, fill: false },
   onEachFeature: (f, layer) => {
     layer.bindPopup(`<b>Colorado's 8th Congressional District</b><br>GEOID ${f.properties.GEOID}<br>Source: Census TIGER/Line, 119th Congress`);
   }
-}).addTo(map);
+});
 
 function ballotBoxIcon(accent, uncertain) {
   const stroke = uncertain ? '#f59e0b' : accent;
