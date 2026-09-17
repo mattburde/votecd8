@@ -273,26 +273,39 @@ const weldDropboxLayer = L.geoJSON(weldDropboxData, {
 
 L.control.scale({ metric: false, imperial: true }).addTo(map);
 
+// Turning a layer on re-checks the map's size first: if the container was
+// resized or laid out after the map initialized (common in iframe embeds),
+// Leaflet can otherwise project the newly-added layer using a stale size
+// and it renders off-screen/invisible until something else forces a resync.
+function setLayerVisible(layer, visible) {
+  if (visible) {
+    map.invalidateSize();
+    map.addLayer(layer);
+  } else {
+    map.removeLayer(layer);
+  }
+}
+
 document.getElementById('toggle-cd8').addEventListener('change', e => {
-  if (e.target.checked) map.addLayer(cd8Layer); else map.removeLayer(cd8Layer);
+  setLayerVisible(cd8Layer, e.target.checked);
 });
 document.getElementById('toggle-county-adams').addEventListener('change', e => {
-  if (e.target.checked) map.addLayer(countyLayers['Adams']); else map.removeLayer(countyLayers['Adams']);
+  setLayerVisible(countyLayers['Adams'], e.target.checked);
 });
 document.getElementById('toggle-county-weld').addEventListener('change', e => {
-  if (e.target.checked) map.addLayer(countyLayers['Weld']); else map.removeLayer(countyLayers['Weld']);
+  setLayerVisible(countyLayers['Weld'], e.target.checked);
 });
 document.getElementById('toggle-county-larimer').addEventListener('change', e => {
-  if (e.target.checked) map.addLayer(countyLayers['Larimer']); else map.removeLayer(countyLayers['Larimer']);
+  setLayerVisible(countyLayers['Larimer'], e.target.checked);
 });
 document.getElementById('toggle-adams-boxes').addEventListener('change', e => {
-  if (e.target.checked) map.addLayer(adamsDropboxLayer); else map.removeLayer(adamsDropboxLayer);
+  setLayerVisible(adamsDropboxLayer, e.target.checked);
 });
 document.getElementById('toggle-larimer-boxes').addEventListener('change', e => {
-  if (e.target.checked) map.addLayer(larimerDropboxLayer); else map.removeLayer(larimerDropboxLayer);
+  setLayerVisible(larimerDropboxLayer, e.target.checked);
 });
 document.getElementById('toggle-weld-boxes').addEventListener('change', e => {
-  if (e.target.checked) map.addLayer(weldDropboxLayer); else map.removeLayer(weldDropboxLayer);
+  setLayerVisible(weldDropboxLayer, e.target.checked);
 });
 
 map.fitBounds(countiesLayer.getBounds(), { padding: [20,20] });
@@ -310,12 +323,18 @@ function toggleMobileView() {
 }
 
 // Fix for embeds/iframes: Leaflet can compute a 0-size map if the container
-// hasn't finished laying out yet when the map initializes (common in iframes).
-// Force it to recheck its size a few times after load.
-setTimeout(() => map.invalidateSize(), 100);
-setTimeout(() => map.invalidateSize(), 500);
-setTimeout(() => map.invalidateSize(), 1500);
-window.addEventListener('resize', () => map.invalidateSize());
+// hasn't finished laying out yet when the map initializes, or the container
+// is later resized by a parent page (common in iframe embeds) without a
+// window 'resize' event ever firing. Watch the container itself so Leaflet
+// always reprojects against its real, current size.
+if (window.ResizeObserver) {
+  new ResizeObserver(() => map.invalidateSize()).observe(document.getElementById('map'));
+} else {
+  setTimeout(() => map.invalidateSize(), 100);
+  setTimeout(() => map.invalidateSize(), 500);
+  setTimeout(() => map.invalidateSize(), 1500);
+  window.addEventListener('resize', () => map.invalidateSize());
+}
 
 // ---------- Address → nearby drop boxes + routing ----------
 
@@ -605,11 +624,7 @@ function buildRouteLayer(routeLetter) {
 
 function toggleRouteLayer(routeLetter, checked) {
   buildRouteLayer(routeLetter);
-  if (checked) {
-    map.addLayer(routeLayers[routeLetter]);
-  } else {
-    map.removeLayer(routeLayers[routeLetter]);
-  }
+  setLayerVisible(routeLayers[routeLetter], checked);
 }
 
 ['A', 'B', 'C', 'D'].forEach(letter => {
