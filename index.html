@@ -284,27 +284,42 @@ function setLayerVisible(layer, visible) {
   }
 }
 
-document.getElementById('toggle-cd8').addEventListener('change', e => {
-  setLayerVisible(cd8Layer, e.target.checked);
-});
-document.getElementById('toggle-county-adams').addEventListener('change', e => {
-  setLayerVisible(countyLayers['Adams'], e.target.checked);
-});
-document.getElementById('toggle-county-weld').addEventListener('change', e => {
-  setLayerVisible(countyLayers['Weld'], e.target.checked);
-});
-document.getElementById('toggle-county-larimer').addEventListener('change', e => {
-  setLayerVisible(countyLayers['Larimer'], e.target.checked);
-});
-document.getElementById('toggle-adams-boxes').addEventListener('change', e => {
-  setLayerVisible(adamsDropboxLayer, e.target.checked);
-});
-document.getElementById('toggle-larimer-boxes').addEventListener('change', e => {
-  setLayerVisible(larimerDropboxLayer, e.target.checked);
-});
-document.getElementById('toggle-weld-boxes').addEventListener('change', e => {
-  setLayerVisible(weldDropboxLayer, e.target.checked);
-});
+// Remember this visitor's own layer selection across their own future visits
+// (localStorage is per-browser — it's never shared with other visitors).
+const LAYER_PREF_KEY = 'cd8map_layer_prefs_v1';
+function loadLayerPrefs() {
+  try { return JSON.parse(localStorage.getItem(LAYER_PREF_KEY)) || {}; }
+  catch (e) { return {}; }
+}
+function saveLayerPref(id, checked) {
+  try {
+    const prefs = loadLayerPrefs();
+    prefs[id] = checked;
+    localStorage.setItem(LAYER_PREF_KEY, JSON.stringify(prefs));
+  } catch (e) {}
+}
+const layerPrefs = loadLayerPrefs();
+
+function bindLayerToggle(id, layer) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (Object.prototype.hasOwnProperty.call(layerPrefs, id)) {
+    el.checked = layerPrefs[id];
+  }
+  setLayerVisible(layer, el.checked);
+  el.addEventListener('change', e => {
+    setLayerVisible(layer, e.target.checked);
+    saveLayerPref(id, e.target.checked);
+  });
+}
+
+bindLayerToggle('toggle-cd8', cd8Layer);
+bindLayerToggle('toggle-county-adams', countyLayers['Adams']);
+bindLayerToggle('toggle-county-weld', countyLayers['Weld']);
+bindLayerToggle('toggle-county-larimer', countyLayers['Larimer']);
+bindLayerToggle('toggle-adams-boxes', adamsDropboxLayer);
+bindLayerToggle('toggle-larimer-boxes', larimerDropboxLayer);
+bindLayerToggle('toggle-weld-boxes', weldDropboxLayer);
 
 map.fitBounds(countiesLayer.getBounds(), { padding: [20,20] });
 
@@ -626,8 +641,17 @@ function toggleRouteLayer(routeLetter, checked) {
 }
 
 ['A', 'B', 'C', 'D'].forEach(letter => {
-  const el = document.getElementById('toggle-route-' + letter);
-  if (el) el.addEventListener('change', e => toggleRouteLayer(letter, e.target.checked));
+  const id = 'toggle-route-' + letter;
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (Object.prototype.hasOwnProperty.call(layerPrefs, id)) {
+    el.checked = layerPrefs[id];
+  }
+  toggleRouteLayer(letter, el.checked);
+  el.addEventListener('change', e => {
+    toggleRouteLayer(letter, e.target.checked);
+    saveLayerPref(id, e.target.checked);
+  });
 });
 </script>
 </body>
