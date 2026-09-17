@@ -276,12 +276,17 @@ const weldDropboxLayer = L.geoJSON(weldDropboxData, {
 
 L.control.scale({ metric: false, imperial: true }).addTo(map);
 
-// Turning a layer on re-checks the map's size first: if the container was
-// resized or laid out after the map initialized (common in iframe embeds),
-// Leaflet can otherwise project the newly-added layer using a stale size
-// and it renders off-screen/invisible until something else forces a resync.
+// Turning a layer on always forces a genuinely fresh add: remove first (a
+// harmless no-op if it isn't already on the map), THEN re-check the map's
+// size, THEN add. Without the remove, a layer that Leaflet already
+// considers "on" the map (e.g. added a moment earlier while the page's
+// layout was still settling, or on a slower connection) would make
+// addLayer() a silent no-op -- Leaflet skips re-adding a layer it already
+// has, so it would keep whatever stale projection it got the first time
+// and never actually re-render, even though invalidateSize() ran.
 function setLayerVisible(layer, visible) {
   if (visible) {
+    map.removeLayer(layer);
     map.invalidateSize();
     map.addLayer(layer);
   } else {
