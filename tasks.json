@@ -1,0 +1,40 @@
+{
+  "lists": [
+    { "id": "inbox", "name": "Inbox" },
+    { "id": "work", "name": "Work" },
+    { "id": "personal", "name": "Personal" },
+    { "id": "errands", "name": "Errands" }
+  ],
+  "tasks": [
+    {
+      "id": "ex-1",
+      "listId": "inbox",
+      "text": "Example task — edit or delete me",
+      "done": false,
+      "priority": "normal",
+      "due": null,
+      "createdAt": "2026-09-17T00:00:00Z",
+      "updatedAt": "2026-09-17T00:00:00Z"
+    },
+    {
+      "id": "ex-2",
+      "listId": "work",
+      "text": "Connect a GitHub token in Settings to sync changes",
+      "done": false,
+      "priority": "high",
+      "due": null,
+      "createdAt": "2026-09-17T00:00:00Z",
+      "updatedAt": "2026-09-17T00:00:00Z"
+    },
+    {
+      "id": "ex-3",
+      "listId": "personal",
+      "text": "Completed tasks show here",
+      "done": true,
+      "priority": "normal",
+      "due": null,
+      "createdAt": "2026-09-17T00:00:00Z",
+      "updatedAt": "2026-09-17T00:00:00Z"
+    }
+  ]
+}
