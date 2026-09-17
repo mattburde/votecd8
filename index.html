@@ -180,7 +180,7 @@ const countyBoundarySource = {'Adams':'Adams County official GIS boundary','Weld
 
 const map = L.map('map', { scrollWheelZoom: true }).setView([40.15, -104.7], 8);
 
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+const baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18,
   attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
 }).addTo(map);
@@ -348,6 +348,25 @@ if (window.ResizeObserver) {
   setTimeout(() => map.invalidateSize(), 1500);
   window.addEventListener('resize', () => map.invalidateSize());
 }
+
+// Mobile browsers (notably iOS Safari) can resume a backgrounded/closed tab
+// from a frozen state without repainting layers that were already on the
+// map -- the layer stays in Leaflet's internal state (and its checkbox
+// still shows checked, since that's just restored from localStorage) but
+// never gets composited back onto the screen. map.addLayer() alone is a
+// no-op for a layer that's already considered "on" the map, so the fix is
+// the same thing manually toggling a layer off/on already does: remove and
+// re-add every current layer to force a clean repaint.
+function resyncAllLayers() {
+  map.invalidateSize();
+  const layers = [];
+  map.eachLayer(l => { if (l !== baseLayer) layers.push(l); });
+  layers.forEach(l => { map.removeLayer(l); map.addLayer(l); });
+}
+window.addEventListener('pageshow', resyncAllLayers);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') resyncAllLayers();
+});
 
 // ---------- Address → nearby drop boxes + routing ----------
 
