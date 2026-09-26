@@ -430,6 +430,20 @@ async function findRoute() {
     const userLat = parseFloat(geoData[0].lat);
     const userLon = parseFloat(geoData[0].lon);
 
+    // Reveal the map before adding anything to it or calling fitBounds --
+    // on mobile the map can still be hidden (display:none, 0x0) behind the
+    // Options panel at this point, which was happening *after* fitBounds
+    // ran, at the very end of this function. A 0x0 container makes
+    // Leaflet's fitBounds degenerate to maxZoom instead of actually
+    // fitting the bounds, and invalidateSize() alone can't fix that after
+    // the fact -- it corrects the size but keeps whatever zoom/center
+    // fitBounds already (wrongly) picked. So this has to happen first.
+    const mainEl = document.getElementById('main');
+    if (mainEl.classList.contains('showing-list') && window.innerWidth <= 780) {
+      toggleMobileView();
+      map.invalidateSize();
+    }
+
     userMarker = L.marker([userLat, userLon], {
       icon: L.divIcon({
         className: '',
@@ -505,12 +519,6 @@ async function findRoute() {
 
     statusEl.textContent = '';
     document.getElementById('clear-btn').style.display = 'block';
-
-    // On mobile, jump to the map view so the result is immediately visible
-    const mainEl = document.getElementById('main');
-    if (mainEl.classList.contains('showing-list') && window.innerWidth <= 780) {
-      toggleMobileView();
-    }
   } catch (err) {
     statusEl.textContent = 'Something went wrong — try again in a moment.';
   }
