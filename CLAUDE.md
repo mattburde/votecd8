@@ -12,13 +12,30 @@ locations, and an address-based drop-box search with driving directions.
   second copy of it for any reason (see "Don't duplicate the map page"
   below).
 - `notes.html` -- data-sourcing notes, linked from `index.html`.
+- `priority.html` -- a separate, clearly-disclaimed "CD-8 Outreach Analysis"
+  page: independent, non-official population/turnout estimates layered on
+  Adams County's drop boxes, ranked into priority tiers. Linked from
+  `index.html`'s header ("See outreach analysis →") and links back. Reuses
+  `cd8Data`/`countiesData`/`adamsDropboxData` from `index.html` at runtime
+  (`fetch('./index.html')` + a brace-matching extractor in its own script) --
+  it does **not** duplicate that data inline, and must never be changed to
+  do so. `index.html` itself is not to be restructured to accommodate this
+  (e.g. no extracting its data into a shared file) -- the one header link is
+  the only change `priority.html`'s existence should ever require there.
+- `priority-targets.js` -- inputs-only config for `priority.html`, one entry
+  per in-CD8 Adams drop box (keyed by exact box name). Every numeric field
+  starts `null`/`"TBD"` until backed by a real, cited source -- never fill
+  one in with a guessed or estimated number. `priority.html`'s own script
+  derives scores/tiers from whatever is here; this file must never hold a
+  pre-assigned tier or score itself.
 
-There is intentionally no build step, bundler, or external data file. Data
-lives inline in `index.html` as `const adamsDropboxData = {...}` etc.
-(GeoJSON `FeatureCollection`s). To update a drop-box location, find it by a
-unique substring of its name/address (`grep -o` or a small script -- some
-lines in this file are 100,000+ characters, so don't try to `Read` the whole
-file or a huge offset range at once) and edit its `coordinates` in place.
+There is intentionally no build step, bundler, or external data file for the
+map itself. Data lives inline in `index.html` as `const adamsDropboxData =
+{...}` etc. (GeoJSON `FeatureCollection`s). To update a drop-box location,
+find it by a unique substring of its name/address (`grep -o` or a small
+script -- some lines in this file are 100,000+ characters, so don't try to
+`Read` the whole file or a huge offset range at once) and edit its
+`coordinates` in place.
 
 ## Deployment -- READ THIS BEFORE DEBUGGING A "LIVE SITE" BUG
 

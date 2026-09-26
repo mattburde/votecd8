@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CD-8 Outreach Analysis — Estimates, Not Official Election Data</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1f2b;
+    --muted: #5b6472;
+    --paper: #fafaf8;
+    --cd8: #6d28d9;
+    --adams: #1d4ed8;
+    --tier1: #dc2626;
+    --tier2: #f97316;
+    --tier3: #eab308;
+    --insufficient: #9ca3af;
+    --outside: #d1d5db;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; height:100%; font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--paper); color: var(--ink); }
+  #app { display:flex; flex-direction:column; height:100vh; }
+  header { padding: 12px 20px 10px; border-bottom: 1px solid #e4e2dc; background:#fff; flex-shrink:0; }
+  header h1 { margin:0; font-size: 18px; letter-spacing:-0.01em; }
+  header .subtitle { margin: 2px 0 0; font-size: 12px; color: var(--muted); font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+  header nav { margin: 8px 0 0; font-size: 12.5px; }
+  header nav a { color: var(--cd8); text-decoration:none; }
+  header nav a:hover { text-decoration:underline; }
+  .disclaimer {
+    margin-top:10px; padding:9px 12px; background:#fff7ed; border:1px solid #fed7aa; border-radius:8px;
+    font-size:12px; color:#7c2d12; line-height:1.5;
+  }
+
+  #main { display:flex; flex-direction:row; align-items:stretch; flex:1; min-height:0; }
+  #map { flex:1; }
+  #panel { width: 320px; flex-shrink:0; background:#fff; border-left:1px solid #e4e2dc; padding: 14px 16px; font-size:13px; overflow-y:auto; }
+  #panel h2 { font-size: 12.5px; text-transform:uppercase; letter-spacing:.06em; color: var(--muted); margin: 20px 0 8px; border-bottom:1px solid #e4e2dc; padding-bottom:6px; }
+  #panel h2:first-child { margin-top:0; }
+  #panel p { font-size:12.5px; line-height:1.55; margin: 6px 0; }
+  #panel .methodology-point { margin-bottom:14px; }
+  #panel .methodology-point b { display:block; font-size:12.5px; margin-bottom:2px; }
+
+  .legend-row { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:12.5px; }
+  .legend-dot { flex:none; border-radius:50%; display:inline-block; }
+  .legend-dot.tier1 { width:16px; height:16px; background:var(--tier1); }
+  .legend-dot.tier2 { width:12px; height:12px; background:var(--tier2); }
+  .legend-dot.tier3 { width:9px; height:9px; background:var(--tier3); }
+  .legend-dot.insufficient { width:8px; height:8px; background:var(--insufficient); }
+  .legend-dot.outside { width:8px; height:8px; background:var(--outside); }
+  .legend-swatch { width:16px; height:10px; flex:none; background: rgba(220,38,38,0.12); border:1px solid var(--tier1); border-radius:2px; }
+
+  #mobile-toggle {
+    display:none;
+    position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    z-index: 1000; background: var(--cd8); color:#fff; border:none; border-radius: 999px;
+    padding: 10px 20px; font-size: 13px; font-weight:600; box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+    cursor:pointer; align-items:center; gap:6px;
+  }
+  @media (max-width: 780px) {
+    #app { height: 100vh; }
+    #main { flex-direction: column; flex:1; min-height:0; position:relative; }
+    #map { width:100%; height:auto; flex:1; min-height:0; }
+    #panel {
+      width: 100%; border-left:none; border-top:1px solid #e4e2dc;
+      position:absolute; top:0; left:0; right:0; bottom:0;
+      overflow-y:auto; background:#fff; display:none;
+    }
+    #main.showing-list #map { display:none; }
+    #main.showing-list #panel { display:block; }
+    #mobile-toggle { display:flex; }
+  }
+
+  .leaflet-popup-content { font-size:12.5px; line-height:1.5; }
+  .leaflet-popup-content b { display:block; margin-bottom:2px; }
+  .popup-tier { font-weight:700; }
+  .popup-tier.tier1 { color: var(--tier1); }
+  .popup-tier.tier2 { color: var(--tier2); }
+  .popup-tier.tier3 { color: #92660a; }
+  .popup-tier.insufficient { color: var(--muted); }
+  .popup-src { color: var(--muted); font-size:11px; }
+
+  #load-error {
+    display:none; margin:16px 20px; padding:12px 14px; background:#fef2f2; border:1px solid #fecaca;
+    border-radius:8px; color:#991b1b; font-size:13px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>CD-8 Outreach Analysis</h1>
+    <p class="subtitle">Estimates, Not Official Election Data</p>
+    <div class="disclaimer">
+      This page contains independent analysis and population estimates layered on official drop-box locations.
+      It is not affiliated with or authorized by any campaign or elections office. It is not coordinated with any candidate.
+    </div>
+    <nav><a href="./index.html">← Back to official drop-box map</a></nav>
+  </header>
+
+  <div id="load-error"></div>
+
+  <div id="main">
+    <div id="map"></div>
+    <button id="mobile-toggle" onclick="toggleMobileView()">
+      <span>Legend & methodology</span>
+    </button>
+    <div id="panel">
+      <h2>Legend</h2>
+      <div class="legend-row"><span class="legend-dot tier1"></span>Tier 1 — top third of scored boxes</div>
+      <div class="legend-row"><span class="legend-swatch"></span>&nbsp;&nbsp;1-mile radius shown for Tier 1 only</div>
+      <div class="legend-row"><span class="legend-dot tier2"></span>Tier 2 — middle third of scored boxes</div>
+      <div class="legend-row"><span class="legend-dot tier3"></span>Tier 3 — bottom third of scored boxes</div>
+      <div class="legend-row"><span class="legend-dot insufficient"></span>Insufficient data — not yet scored</div>
+      <div class="legend-row"><span class="legend-dot outside"></span>Outside CD-8 — not analyzed here</div>
+
+      <h2>Methodology</h2>
+
+      <div class="methodology-point">
+        <b>1-mile radius & precinct allocation</b>
+        <p>Each drop box's "nearby voters" and "turnout gap" figures describe a 1-mile radius around it. Since voter-file and election-result data are published by precinct, not by arbitrary radius, those precinct totals have to be allocated across the radius somehow. This page currently uses <b>area-weighted allocation</b>: a precinct's total is scaled by the share of the precinct's <em>land area</em> that falls inside the 1-mile circle (see <code>allocateAreaWeighted()</code> in the page source).</p>
+        <p><strong>This is an approximation, not a measurement.</strong> Area-weighting assumes voters are distributed uniformly across a precinct, which is often false — a precinct that includes an industrial park, a reservoir, airport land, or open space will overstate the residential population actually inside the radius. Population- or voter-address-weighted allocation (distributing by where registered voters actually live, not by raw land area) is the intended future improvement once address-level or block-level data is available; the allocation logic is written as its own separate function specifically so it can be swapped out later without touching the scoring formula.</p>
+      </div>
+
+      <div class="methodology-point">
+        <b>Turnout baseline: 2022 general election</b>
+        <p>Turnout gap uses the 2022 general election as its baseline. That's a deliberate analytical choice, not an objective "correct" answer: 2022 was CD-8's first general election, and as a midterm it likely resembles turnout patterns in the 2026 midterm more closely than a presidential-year election like 2024 would. A different baseline would produce different turnout-gap numbers.</p>
+      </div>
+
+      <div class="methodology-point">
+        <b>All-mail voting caveat</b>
+        <p>Colorado is an all-mail-ballot state. "Nearby voters" describes a geographic outreach zone around a drop box — it does not mean those voters are tied to that specific box. Any registered voter can return their ballot at <em>any</em> drop box in their county, or by mail, regardless of which box is geographically nearest them.</p>
+      </div>
+
+      <div class="methodology-point">
+        <b>Scoring weights are adjustable</b>
+        <p>The current formula weights registered voters nearby at 50%, turnout gap at 30%, and accessibility at 20%. This is a starting assumption for discussion, not a fixed rule — see the <code>SCORE_WEIGHTS</code> constant at the top of the page's script, where it's documented as adjustable.</p>
+      </div>
+
+      <div class="methodology-point">
+        <b>Tiers are relative, not absolute</b>
+        <p>Tier 1/2/3 are <strong>relative rankings among the Adams County CD-8 boxes currently scored on this page</strong> — not an absolute measure of outreach value. A Tier 3 box could still be a strong target in absolute terms if every box in the scored set happens to score high; conversely a change in which boxes have data can shift everyone's tier without their underlying numbers changing.</p>
+      </div>
+
+      <div class="methodology-point">
+        <b>Missing data is never guessed</b>
+        <p>A box missing any of its three inputs (registered voters, turnout gap, accessibility) is marked "insufficient data" and left out of scoring and tiering entirely. It is never defaulted to zero or otherwise silently scored — see <code>priority-targets.js</code> for exactly which fields are currently populated.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="priority-targets.js"></script>
+<script>
+"use strict";
+
+// ---------- Load shared base-map data from index.html ----------
+//
+// index.html is the one and only canonical map page (see CLAUDE.md) and
+// this page must not duplicate its embedded county/CD8/drop-box data by
+// hand-copying it -- that's exactly the kind of drift that caused real
+// bugs here before. Instead, fetch index.html itself and pull the three
+// `const NAME = {...GeoJSON...};` declarations we need out of its markup,
+// parsing each as JSON (they're plain GeoJSON literals, not arbitrary JS,
+// so JSON.parse is safe and avoids eval()). This keeps index.html entirely
+// untouched other than the small link added in its header.
+
+function extractJsonConst(source, varName) {
+  const marker = "const " + varName + " = ";
+  const start = source.indexOf(marker);
+  if (start === -1) throw new Error("Could not find `" + marker + "` in index.html");
+  let i = start + marker.length;
+  if (source[i] !== "{" && source[i] !== "[") {
+    throw new Error("Expected `" + varName + "` to start with { or [ at index.html:" + i);
+  }
+  const open = source[i];
+  const close = open === "{" ? "}" : "]";
+  let depth = 0, inString = false, escape = false;
+  const jsonStart = i;
+  for (; i < source.length; i++) {
+    const c = source[i];
+    if (inString) {
+      if (escape) escape = false;
+      else if (c === "\\") escape = true;
+      else if (c === '"') inString = false;
+      continue;
+    }
+    if (c === '"') { inString = true; continue; }
+    if (c === open) depth++;
+    else if (c === close) {
+      depth--;
+      if (depth === 0) { i++; break; }
+    }
+  }
+  return JSON.parse(source.slice(jsonStart, i));
+}
+
+async function loadBaseMapData() {
+  const res = await fetch("./index.html");
+  if (!res.ok) throw new Error("Fetching index.html failed: HTTP " + res.status);
+  const html = await res.text();
+  return {
+    cd8Data: extractJsonConst(html, "cd8Data"),
+    countiesData: extractJsonConst(html, "countiesData"),
+    adamsDropboxData: extractJsonConst(html, "adamsDropboxData")
+  };
+}
+
+// ---------- Scoring weights ----------
+//
+// Adjustable starting assumption, not a fixed rule -- open to revision once
+// there's real data to sanity-check it against. See the "Scoring weights
+// are adjustable" methodology point in the panel.
+const SCORE_WEIGHTS = { registeredVoters: 0.5, turnoutGap: 0.3, accessibility: 0.2 };
+
+// ---------- Allocation module (separate from scoring, swappable) ----------
+//
+// Distributes a precinct-level total across an arbitrary radius by land
+// area overlap. Kept as its own module, with its own function boundary,
+// so it can be replaced with population- or address-weighted allocation
+// later without touching computeScores() below. Not currently invoked by
+// computeScores() -- priorityInputs' registeredVoters/turnoutGap are filled
+// in directly from source data (see priority-targets.js), and this module
+// is the designated place to derive them from raw precinct data once that
+// source data (precinct totals + precinct polygons) is available.
+//
+// AREA-WEIGHTING ASSUMPTION: this treats voters/ballots as uniformly
+// distributed across each precinct's land area. That is frequently false --
+// a precinct containing an industrial park, a reservoir, airport land, or
+// open space will overstate how much of its population is actually inside
+// the radius. Never present an area-weighted figure in the UI without this
+// caveat attached (see the methodology panel).
+
+function pointInPolygonRing(point, ring) {
+  // Ray-casting point-in-polygon test against a single [ [lon,lat], ... ] ring.
+  const [x, y] = point;
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i];
+    const [xj, yj] = ring[j];
+    const intersects = (yi > y) !== (yj > y) &&
+      x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+
+function pointInPolygon(point, polygonCoords) {
+  // polygonCoords: GeoJSON Polygon coordinates -- [outerRing, hole1, hole2, ...]
+  if (!pointInPolygonRing(point, polygonCoords[0])) return false;
+  for (let h = 1; h < polygonCoords.length; h++) {
+    if (pointInPolygonRing(point, polygonCoords[h])) return false; // inside a hole
+  }
+  return true;
+}
+
+function milesToDegreesLat(miles) { return miles / 69.0; }
+function milesToDegreesLon(miles, atLat) { return miles / (69.172 * Math.cos(atLat * Math.PI / 180)); }
+
+function estimateOverlapFraction(precinctPolygonCoords, circleCenter, circleRadiusMiles, samples) {
+  // Grid-sampling area estimate of what fraction of the precinct polygon's
+  // area falls inside the circle. No polygon-clipping library is used (this
+  // project loads no dependency beyond Leaflet), so this samples a regular
+  // grid over the precinct's bounding box and counts points that land in
+  // both the precinct and the circle vs. points that land in the precinct
+  // at all -- a standard, dependency-free way to estimate irregular
+  // polygon/circle overlap. `samples` controls the grid resolution per axis
+  // (defaults to 40x40 = 1600 sample points); higher is more accurate and
+  // slower.
+  samples = samples || 40;
+  const allRings = precinctPolygonCoords.flat(1);
+  const lons = allRings.map(p => p[0]), lats = allRings.map(p => p[1]);
+  const minLon = Math.min(...lons), maxLon = Math.max(...lons);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+
+  const [clon, clat] = circleCenter;
+  const dLat = milesToDegreesLat(circleRadiusMiles);
+  const dLon = milesToDegreesLon(circleRadiusMiles, clat);
+
+  let inPrecinct = 0, inBoth = 0;
+  for (let a = 0; a < samples; a++) {
+    const lon = minLon + (maxLon - minLon) * (a + 0.5) / samples;
+    for (let b = 0; b < samples; b++) {
+      const lat = minLat + (maxLat - minLat) * (b + 0.5) / samples;
+      if (!pointInPolygon([lon, lat], precinctPolygonCoords)) continue;
+      inPrecinct++;
+      // Approximate the circle as an ellipse in lon/lat space using the
+      // per-axis degree radii computed above -- accurate enough at the
+      // ~1 mile scale this page deals with.
+      const normLon = (lon - clon) / dLon;
+      const normLat = (lat - clat) / dLat;
+      if (normLon * normLon + normLat * normLat <= 1) inBoth++;
+    }
+  }
+  if (inPrecinct === 0) return 0;
+  return inBoth / inPrecinct;
+}
+
+function allocateAreaWeighted(precincts, circleCenter, circleRadiusMiles) {
+  // precincts: [{ id, totalValue, polygonCoords }, ...] -- totalValue is the
+  // precinct's full registered-voter count or ballots-cast count; polygonCoords
+  // is that precinct's GeoJSON Polygon coordinates.
+  // Returns the estimated total allocated to the circle, summed across every
+  // precinct that overlaps it.
+  let allocated = 0;
+  for (const precinct of precincts) {
+    const fraction = estimateOverlapFraction(precinct.polygonCoords, circleCenter, circleRadiusMiles);
+    allocated += precinct.totalValue * fraction;
+  }
+  return allocated;
+}
+
+// ---------- Scoring engine ----------
+//
+// A box is only scored if it has non-null registeredVoters, turnoutGap, AND
+// accessibility. registeredVoters and turnoutGap are min-max normalized to
+// 0-1 across that same scored set (not across every box in the config) --
+// since only the scored set's values ever feed the formula, normalizing
+// against anything wider would let an excluded box's raw value skew the
+// scale for boxes that do get scored. accessibility is used as-is: it's
+// defined in priority-targets.js as already a 0-1 score, so it isn't
+// renormalized.
+
+function minMaxNormalize(values) {
+  const min = Math.min(...values), max = Math.max(...values);
+  if (max === min) return values.map(() => 0.5); // no spread in the data -- treat as tied
+  return values.map(v => (v - min) / (max - min));
+}
+
+function computeScores(inputs) {
+  const names = Object.keys(inputs);
+  const complete = names.filter(name => {
+    const e = inputs[name];
+    return e.registeredVoters !== null && e.registeredVoters !== undefined &&
+      e.turnoutGap !== null && e.turnoutGap !== undefined &&
+      e.accessibility !== null && e.accessibility !== undefined;
+  });
+
+  const normVoters = minMaxNormalize(complete.map(name => inputs[name].registeredVoters));
+  const normGap = minMaxNormalize(complete.map(name => inputs[name].turnoutGap));
+
+  const scores = {};
+  names.forEach(name => { scores[name] = { insufficientData: true }; });
+
+  complete.forEach((name, idx) => {
+    const raw = inputs[name];
+    const normalized = {
+      registeredVoters: normVoters[idx],
+      turnoutGap: normGap[idx],
+      accessibility: raw.accessibility
+    };
+    const score =
+      SCORE_WEIGHTS.registeredVoters * normalized.registeredVoters +
+      SCORE_WEIGHTS.turnoutGap * normalized.turnoutGap +
+      SCORE_WEIGHTS.accessibility * normalized.accessibility;
+    scores[name] = {
+      insufficientData: false,
+      raw: {
+        registeredVoters: raw.registeredVoters,
+        turnoutGap: raw.turnoutGap,
+        accessibility: raw.accessibility
+      },
+      normalized,
+      score
+    };
+  });
+
+  return scores;
+}
+
+// ---------- Tier assignment ----------
+//
+// Scored boxes only, ranked by score descending. Ties are broken by a
+// stable sort on score, then alphabetically by box name -- documented here
+// since the spec calls for an explicit, deterministic tie-break rule rather
+// than leaving sort order to chance. Split into exact thirds using
+// tier = floor(rank * 3 / N) + 1, a standard quantile-bucketing formula
+// that handles any N (including counts not divisible by 3) deterministically
+// without needing a separate remainder rule.
+
+function assignTiers(scores) {
+  const scored = Object.keys(scores).filter(name => !scores[name].insufficientData);
+  scored.sort((a, b) => {
+    if (scores[b].score !== scores[a].score) return scores[b].score - scores[a].score;
+    return a.localeCompare(b);
+  });
+  const tiers = {};
+  const n = scored.length;
+  scored.forEach((name, i) => {
+    tiers[name] = Math.floor((i * 3) / n) + 1;
+  });
+  return tiers;
+}
+
+// ---------- Rendering ----------
+
+function fmt(value, suffix) {
+  if (value === null || value === undefined) return "not yet available";
+  return suffix ? value + suffix : String(value);
+}
+
+function buildScoredPopup(name, tier, scoreInfo, config) {
+  const t = "tier" + tier;
+  return (
+    "<b>" + name + "</b>" +
+    "<div class=\"popup-tier " + t + "\">Priority tier: " + tier + " (relative ranking among scored Adams CD-8 boxes)</div>" +
+    "<div>Score: " + scoreInfo.score.toFixed(2) +
+      " — Nearby voters " + scoreInfo.normalized.registeredVoters.toFixed(2) +
+      " | Turnout gap " + scoreInfo.normalized.turnoutGap.toFixed(2) +
+      " | Accessibility " + scoreInfo.normalized.accessibility.toFixed(2) + "</div>" +
+    "<div>Registered voters nearby (1 mi, est.): " + fmt(scoreInfo.raw.registeredVoters) + "</div>" +
+    "<div>2022 general election turnout gap (est.): " + fmt(scoreInfo.raw.turnoutGap) + "</div>" +
+    "<div>Accessibility score: " + fmt(scoreInfo.raw.accessibility) + "</div>" +
+    "<div>Allocation method: " + config.allocationMethod + "</div>" +
+    "<div class=\"popup-src\">Sources — voters: " + config.sources.registeredVoters +
+      "; turnout gap: " + config.sources.turnoutGap +
+      "; accessibility: " + config.sources.accessibility + "</div>" +
+    "<div class=\"popup-src\">Last updated: " + config.lastUpdated + "</div>"
+  );
+}
+
+function buildInsufficientPopup(name, config) {
+  const missing = [];
+  if (config.registeredVoters === null || config.registeredVoters === undefined) missing.push("registered voters");
+  if (config.turnoutGap === null || config.turnoutGap === undefined) missing.push("turnout gap");
+  if (config.accessibility === null || config.accessibility === undefined) missing.push("accessibility");
+  return (
+    "<b>" + name + "</b>" +
+    "<div class=\"popup-tier insufficient\">Priority tier: insufficient data (missing " + missing.join(", ") + ")</div>" +
+    "<div>Registered voters nearby (1 mi, est.): " + fmt(config.registeredVoters) + "</div>" +
+    "<div>2022 general election turnout gap (est.): " + fmt(config.turnoutGap) + "</div>" +
+    "<div>Accessibility score: " + fmt(config.accessibility) + "</div>" +
+    "<div>Allocation method: " + config.allocationMethod + "</div>" +
+    "<div class=\"popup-src\">Sources — voters: " + config.sources.registeredVoters +
+      "; turnout gap: " + config.sources.turnoutGap +
+      "; accessibility: " + config.sources.accessibility + "</div>" +
+    "<div class=\"popup-src\">Last updated: " + config.lastUpdated + "</div>"
+  );
+}
+
+function tierMarkerStyle(tier) {
+  // fillColor is literal hex, not var(--tier1) etc: Leaflet sets this as a
+  // raw SVG attribute, not a CSS property, so a custom property wouldn't
+  // reliably resolve across browsers. Keep these in sync with the --tier1/
+  // --tier2/--tier3 custom properties in <style> above (used by the legend).
+  const styles = {
+    1: { radius: 11, color: "#991b1b", fillColor: "#dc2626", weight: 2 },
+    2: { radius: 8, color: "#c2410c", fillColor: "#f97316", weight: 1.5 },
+    3: { radius: 6, color: "#a16207", fillColor: "#eab308", weight: 1.5 }
+  };
+  return styles[tier];
+}
+
+async function init() {
+  let baseData;
+  try {
+    baseData = await loadBaseMapData();
+  } catch (err) {
+    const el = document.getElementById("load-error");
+    el.style.display = "block";
+    el.textContent = "Couldn't load shared map data from index.html (" + err.message + "). " +
+      "This page reuses index.html's own data rather than duplicating it, so it needs index.html " +
+      "reachable at the same location.";
+    return;
+  }
+
+  const { cd8Data, countiesData, adamsDropboxData } = baseData;
+
+  const map = L.map("map", { scrollWheelZoom: true }).setView([39.95, -104.85], 10);
+
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  }).addTo(map);
+
+  const cd8Layer = L.geoJSON(cd8Data, { style: { color: "#4c1d95", weight: 3, fill: false } }).addTo(map);
+
+  const adamsFeature = countiesData.features.find(f => f.properties.NAME === "Adams");
+  const adamsLayer = L.geoJSON(adamsFeature, {
+    style: { color: "#1d4ed8", weight: 2, fillColor: "#1d4ed8", fillOpacity: 0.05 }
+  }).addTo(map);
+
+  const scores = computeScores(priorityInputs);
+  const tiers = assignTiers(scores);
+
+  adamsDropboxData.features.forEach(f => {
+    const name = f.properties.name;
+    const [lon, lat] = f.geometry.coordinates;
+    const inScope = Object.prototype.hasOwnProperty.call(priorityInputs, name);
+
+    if (!inScope) {
+      // Literal hex, not var(--outside): Leaflet sets this as a raw SVG
+      // attribute, not a CSS property, so a custom property wouldn't
+      // reliably resolve across browsers. Keep in sync with --outside above.
+      L.circleMarker([lat, lon], {
+        radius: 5, color: "#9ca3af", fillColor: "#d1d5db", fillOpacity: 0.6, weight: 1
+      })
+        .bindPopup("<b>" + name + "</b><div>Outside CD-8 (District 6/4) — not included in this analysis.</div>")
+        .addTo(map);
+      return;
+    }
+
+    const config = priorityInputs[name];
+    const scoreInfo = scores[name];
+
+    if (scoreInfo.insufficientData) {
+      // Literal hex, not var(--insufficient) -- see comment above.
+      L.circleMarker([lat, lon], {
+        radius: 5, color: "#6b7280", fillColor: "#9ca3af", fillOpacity: 0.8, weight: 1
+      })
+        .bindPopup(buildInsufficientPopup(name, config))
+        .addTo(map);
+      return;
+    }
+
+    const tier = tiers[name];
+    const style = tierMarkerStyle(tier);
+    L.circleMarker([lat, lon], {
+      radius: style.radius, color: style.color, fillColor: style.fillColor, fillOpacity: 0.9, weight: style.weight
+    })
+      .bindPopup(buildScoredPopup(name, tier, scoreInfo, config))
+      .addTo(map);
+
+    if (tier === 1) {
+      L.circle([lat, lon], {
+        radius: config.radiusMiles * 1609.34,
+        color: "#dc2626", weight: 1, fillColor: "#dc2626", fillOpacity: 0.12
+      }).addTo(map);
+    }
+  });
+
+  map.fitBounds(adamsLayer.getBounds(), { padding: [20, 20] });
+
+  if (window.ResizeObserver) {
+    new ResizeObserver(() => map.invalidateSize()).observe(document.getElementById("map"));
+  } else {
+    window.addEventListener("resize", () => map.invalidateSize());
+  }
+}
+
+function toggleMobileView() {
+  const mainEl = document.getElementById("main");
+  mainEl.classList.toggle("showing-list");
+}
+
+init();
+</script>
+</body>
+</html>
