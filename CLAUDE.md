@@ -2,8 +2,7 @@
 
 Colorado CD-8 ballot drop-box locator: an interactive Leaflet map of CD-8's
 boundary, county boundaries (Adams, Weld, Larimer), ballot drop-box
-locations, a rolling-media route tracker, and an address-based drop-box
-search with driving directions.
+locations, and an address-based drop-box search with driving directions.
 
 ## Files
 
@@ -16,11 +15,10 @@ search with driving directions.
 
 There is intentionally no build step, bundler, or external data file. Data
 lives inline in `index.html` as `const adamsDropboxData = {...}` etc.
-(GeoJSON `FeatureCollection`s) and `const rollingMediaStops = [...]`. To
-update a drop-box location or route stop, find it by a unique substring of
-its name/address (`grep -o` or a small script -- some lines in this file are
-100,000+ characters, so don't try to `Read` the whole file or a huge offset
-range at once) and edit its `coordinates` in place.
+(GeoJSON `FeatureCollection`s). To update a drop-box location, find it by a
+unique substring of its name/address (`grep -o` or a small script -- some
+lines in this file are 100,000+ characters, so don't try to `Read` the whole
+file or a huge offset range at once) and edit its `coordinates` in place.
 
 ## Deployment -- READ THIS BEFORE DEBUGGING A "LIVE SITE" BUG
 
@@ -107,6 +105,41 @@ matters as much as the specific fix:
   attributes, serve with `python3 -m http.server`, and drive it with
   Playwright (Chromium is preinstalled in this environment at
   `/opt/pw-browsers/chromium`).
+
+## QA/QC checklist -- run this before calling a change done
+
+Don't declare a change finished just because the Edit tool call succeeded.
+Before telling the user something is live:
+
+1. **Confirm the edit actually landed as intended.** After editing, `grep`
+   for the exact new content (and, for a removal, confirm the old content
+   is gone) -- don't just trust the diff summary. For `index.html` JS
+   changes, run
+   `node -e "new Function(require('fs').readFileSync('index.html','utf8').match(/<script>([\s\S]*?)<\/script>\s*<\/body>/)[1])"`
+   to catch syntax errors before they ever reach a browser.
+2. **For anything behavioral/interactive** (map layers, toggles, event
+   handlers, persistence) -- test it locally per the "Debugging the Leaflet
+   map" section below (vendored Leaflet + a local server + Playwright)
+   *before* pushing. Don't ship a behavioral change on reasoning alone if
+   it can be exercised locally instead.
+3. **Push the feature branch, then merge to `main` and push `main`.** A fix
+   that isn't on `main` isn't live -- see "Deployment" above.
+4. **Verify the Pages deployment succeeded** for the exact commit SHA you
+   expect to be live, via `mcp__github__actions_list` /
+   `list_workflow_runs` (`"conclusion": "success"` against that SHA). Do
+   this yourself, every time -- it takes seconds and is the single check
+   most likely to explain a "why isn't this working" report before it
+   even happens.
+5. **Match how much you ask the user to re-verify to the actual risk.**
+   Once steps 1-4 all check out for a plain content/data change (a new
+   link, a corrected coordinate, edited text) with no behavioral risk,
+   that's sufficient -- don't also ask the user to check Private Browsing
+   or otherwise re-verify; a successful, confirmed deploy of a static
+   content change is the answer, not a starting point for more doubt.
+   Reserve "please confirm on your device" for changes whose correctness
+   depends on real browser/device behavior this environment can't fully
+   simulate (e.g. mobile Safari quirks) -- and say specifically *why*
+   you're asking, not as a reflexive hedge on every change.
 
 ## Scope
 
