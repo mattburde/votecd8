@@ -40,7 +40,7 @@
   #panel h2:first-child { margin-top:0; }
   #panel p { font-size:12.5px; line-height:1.55; margin: 6px 0; }
   #panel .methodology-point { margin-bottom:14px; }
-  #panel .methodology-point b { display:block; font-size:12.5px; margin-bottom:2px; }
+  #panel .methodology-point b.point-title { display:block; font-size:12.5px; margin-bottom:2px; }
 
   .legend-row { display:flex; align-items:center; gap:8px; padding:4px 0; font-size:12.5px; }
   .legend-dot { flex:none; border-radius:50%; display:inline-block; }
@@ -118,33 +118,33 @@
       <h2>Methodology</h2>
 
       <div class="methodology-point">
-        <b>1-mile radius & precinct allocation</b>
+        <b class="point-title">1-mile radius & precinct allocation</b>
         <p>Each drop box's "nearby voters" and "turnout gap" figures describe a 1-mile radius around it. Since voter-file and election-result data are published by precinct, not by arbitrary radius, those precinct totals have to be allocated across the radius somehow. This page currently uses <b>area-weighted allocation</b>: a precinct's total is scaled by the share of the precinct's <em>land area</em> that falls inside the 1-mile circle (see <code>allocateAreaWeighted()</code> in the page source).</p>
         <p><strong>This is an approximation, not a measurement.</strong> Area-weighting assumes voters are distributed uniformly across a precinct, which is often false — a precinct that includes an industrial park, a reservoir, airport land, or open space will overstate the residential population actually inside the radius. Population- or voter-address-weighted allocation (distributing by where registered voters actually live, not by raw land area) is the intended future improvement once address-level or block-level data is available; the allocation logic is written as its own separate function specifically so it can be swapped out later without touching the scoring formula.</p>
       </div>
 
       <div class="methodology-point">
-        <b>Turnout baseline: 2022 general election</b>
+        <b class="point-title">Turnout baseline: 2022 general election</b>
         <p>Turnout gap uses the 2022 general election as its baseline. That's a deliberate analytical choice, not an objective "correct" answer: 2022 was CD-8's first general election, and as a midterm it likely resembles turnout patterns in the 2026 midterm more closely than a presidential-year election like 2024 would. A different baseline would produce different turnout-gap numbers.</p>
       </div>
 
       <div class="methodology-point">
-        <b>All-mail voting caveat</b>
+        <b class="point-title">All-mail voting caveat</b>
         <p>Colorado is an all-mail-ballot state. "Nearby voters" describes a geographic outreach zone around a drop box — it does not mean those voters are tied to that specific box. Any registered voter can return their ballot at <em>any</em> drop box in their county, or by mail, regardless of which box is geographically nearest them.</p>
       </div>
 
       <div class="methodology-point">
-        <b>Scoring weights are adjustable</b>
+        <b class="point-title">Scoring weights are adjustable</b>
         <p>The current formula weights registered voters nearby at 50%, turnout gap at 30%, and accessibility at 20%. This is a starting assumption for discussion, not a fixed rule — see the <code>SCORE_WEIGHTS</code> constant at the top of the page's script, where it's documented as adjustable.</p>
       </div>
 
       <div class="methodology-point">
-        <b>Tiers are relative, not absolute</b>
+        <b class="point-title">Tiers are relative, not absolute</b>
         <p>Tier 1/2/3 are <strong>relative rankings among the Adams County CD-8 boxes currently scored on this page</strong> — not an absolute measure of outreach value. A Tier 3 box could still be a strong target in absolute terms if every box in the scored set happens to score high; conversely a change in which boxes have data can shift everyone's tier without their underlying numbers changing.</p>
       </div>
 
       <div class="methodology-point">
-        <b>Missing data is never guessed</b>
+        <b class="point-title">Missing data is never guessed</b>
         <p>A box missing any of its three inputs (registered voters, turnout gap, accessibility) is marked "insufficient data" and left out of scoring and tiering entirely. It is never defaulted to zero or otherwise silently scored — see <code>priority-targets.js</code> for exactly which fields are currently populated.</p>
       </div>
     </div>
