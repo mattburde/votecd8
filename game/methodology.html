@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Methodology &amp; Privacy — Ballot Journey</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root { --ink:#1a1f2b; --muted:#5b6472; --paper:#fafaf8; --cd8:#6d28d9; }
+  * { box-sizing: border-box; }
+  body {
+    margin:0; padding:24px 20px 60px; max-width:680px; margin-left:auto; margin-right:auto;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--paper); color: var(--ink); line-height:1.6;
+  }
+  a { color: var(--cd8); }
+  a.back { display:inline-block; margin-bottom:20px; font-size:13px; text-decoration:none; }
+  h1 { font-size:22px; margin:0 0 4px; }
+  .subtitle { color:var(--muted); font-size:13px; margin-bottom:32px; }
+  h2 { font-size:15px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin:32px 0 10px; border-bottom:1px solid #e4e2dc; padding-bottom:6px; }
+  p { font-size:14px; }
+  .callout { background:#fff7ed; border:1px solid #fed7aa; color:#7c2d12; border-radius:10px; padding:12px 14px; font-size:13px; }
+  .callout.good { background:#f0fdf4; border-color:#bbf7d0; color:#166534; }
+  ul { font-size:14px; padding-left:20px; }
+  li { margin-bottom:6px; }
+</style>
+</head>
+<body>
+  <a class="back" href="./index.html">← Back to the game</a>
+  <h1>Methodology &amp; Privacy</h1>
+  <p class="subtitle">Ballot Journey — CD-8 neighborhood ballot-return game</p>
+
+  <div class="callout">
+    🧪 <strong>This is a demo-mode prototype.</strong> Everything you do here is stored only in your own
+    browser's local storage. It is not shared with other devices, not visible to anyone else, and is not a
+    real multi-person leaderboard yet. See "What demo mode means" below.
+  </div>
+
+  <h2>What this is</h2>
+  <p>A turnout game: it helps you prepare for your mail ballot before it arrives, track it, find a drop box,
+  and — if you choose to share a confirmation screenshot — celebrate when it's counted, together with a
+  neighborhood/team you pick.</p>
+  <p><strong>This is not a persuasion product.</strong> It never asks how you voted, never recommends a
+  candidate, and never tries to infer who you're voting for.</p>
+
+  <h2>Game data vs. official election data</h2>
+  <p>Drop-box locations shown here come directly from this project's verified, official Adams County data
+  (the same data behind the <a href="../index.html">official drop-box map</a>) — never re-typed or
+  re-derived.</p>
+  <p>Everything else — your status, your neighborhood's confirmed count, badges, the leaderboard — is
+  <strong>game data</strong>: self-reported or submitted by participants, reviewed by a human, and never
+  presented as an official vote count or official turnout figure.</p>
+  <p><strong>"Game-confirmed ballots" is not "official ballots cast."</strong> The leaderboard counts people
+  who played this game and had a submission approved here — a small, self-selected group, not a measurement
+  of your neighborhood's actual turnout.</p>
+
+  <h2>What demo mode means</h2>
+  <p>This repository is a static website with no server and no database. This prototype was built without
+  credentials to provision one, so it ships with a documented, swappable storage interface
+  (<code>game/data-adapter.js</code>) behind a local, single-device implementation. That means, right now:</p>
+  <ul>
+    <li>Your data lives only in this browser. Switching devices starts fresh.</li>
+    <li>The leaderboard only reflects neighborhoods/participants created in <em>this</em> browser.</li>
+    <li>The admin dashboard can only see what's in the same browser (useful for testing the flow end-to-end
+      on one device, not for a real multi-person pilot).</li>
+  </ul>
+  <p>A real pilot with other people needs a real backend implementing the same interface. See the project's
+  deliverables doc for the concrete recommendation.</p>
+
+  <h2>Screenshot privacy</h2>
+  <p>If you submit a BallotTrax confirmation screenshot:</p>
+  <ul>
+    <li>It is read only inside your own browser, to compute a one-way "fingerprint" (a short hash) used to
+      spot likely duplicate submissions.</li>
+    <li>The image itself is <strong>never uploaded, never sent anywhere, and never stored</strong> — not even
+      in this browser's local storage. Once the fingerprint is computed, the image is discarded.</li>
+    <li>Only the fingerprint, your attestation ("this shows my ballot was counted"), and a timestamp are kept.</li>
+    <li>Your name, email, or any other BallotTrax account detail is never extracted, stored, or displayed.</li>
+    <li>Nothing about your submission is ever shown publicly or to other participants.</li>
+  </ul>
+  <div class="callout">
+    A real deployment that wants a human to actually look at a screenshot before approving it would need to
+    briefly and securely store the image for that one review, then delete it — this prototype doesn't do
+    that, so review currently relies on your attestation and the duplicate-fingerprint signal alone. That
+    tradeoff is intentional for this prototype and documented as a known limitation, not hidden.
+  </div>
+
+  <h2>Duplicate &amp; abuse protection</h2>
+  <p>Submitting the same (or a near-identical) screenshot twice is flagged automatically by comparing
+  fingerprints, and routed to manual review rather than silently accepted or silently blocked. This is
+  lightweight, reasonable abuse resistance for a civic game — not identity verification, and not a claim
+  that it's foolproof.</p>
+
+  <h2>Neighborhoods</h2>
+  <p>For this first prototype, a "neighborhood" is a <strong>name you choose</strong> — not a government
+  boundary, not inferred from your address, and not linked to any demographic or political data. This avoids
+  inferring anything about who lives where. A future version could roll these up into county or precinct
+  totals for broader comparisons; that hasn't been built yet.</p>
+
+  <h2>Questions or concerns</h2>
+  <p>This is an independent civic project, not an official government tool. See
+  <a href="../priority.html">the outreach analysis page</a> for a similar disclaimer style, and the
+  project's <code>game/DELIVERABLES.md</code> for the full list of legal and privacy items still awaiting
+  human review before any real-world pilot.</p>
+
+</body>
+</html>

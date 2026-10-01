@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ballot Journey — CD-8</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Track your ballot, find your drop box, and help your neighborhood finish first. A turnout game, not a persuasion tool.">
+<style>
+  :root {
+    --ink: #1a1f2b;
+    --muted: #5b6472;
+    --paper: #fafaf8;
+    --cd8: #6d28d9;
+    --good: #16a34a;
+    --warn: #b45309;
+    --surface: #ffffff;
+    --border: #e4e2dc;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin:0; padding:0; background: var(--paper); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  }
+  body { padding-bottom: 72px; } /* room for bottom nav */
+  a { color: var(--cd8); }
+
+  .demo-banner {
+    background:#fff7ed; border-bottom:1px solid #fed7aa; color:#7c2d12;
+    font-size:11.5px; line-height:1.4; padding:7px 14px; text-align:center;
+  }
+  .demo-banner a { color:#7c2d12; text-decoration:underline; }
+
+  header.app-header { padding: 14px 18px 10px; background:#fff; border-bottom:1px solid var(--border); }
+  header.app-header h1 { margin:0; font-size:19px; }
+  header.app-header .tagline { margin:3px 0 0; font-size:12.5px; color:var(--muted); }
+
+  .stepper { display:flex; padding: 12px 18px 0; gap:4px; }
+  .stepper .step {
+    flex:1; text-align:center; font-size:10px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.03em; color:var(--muted); padding-bottom:8px; border-bottom:3px solid var(--border);
+  }
+  .stepper .step.active { color: var(--cd8); border-bottom-color: var(--cd8); }
+  .stepper .step.done { color: var(--good); border-bottom-color: var(--good); }
+
+  main { padding: 16px 18px 30px; max-width:560px; margin:0 auto; }
+  .view { display:none; }
+  .view.active { display:block; }
+
+  .hero { text-align:center; padding: 10px 0 18px; }
+  .hero h2 { font-size:22px; margin:0 0 6px; }
+  .hero p { font-size:14px; color:var(--muted); margin:0; }
+
+  .action-row { display:flex; flex-direction:column; gap:12px; margin: 14px 0; }
+  .btn {
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    font: inherit; font-size:16px; font-weight:700; padding:16px 18px; border-radius:14px;
+    border:none; cursor:pointer; text-decoration:none;
+  }
+  .btn.primary { background: var(--cd8); color:#fff; }
+  .btn.secondary { background:#fff; color:var(--cd8); border:2px solid var(--cd8); }
+  .btn.good { background: var(--good); color:#fff; }
+  .btn.ghost { background:transparent; color:var(--muted); border:1px solid var(--border); font-size:13.5px; font-weight:600; padding:10px 14px; }
+  .btn:disabled { opacity:0.5; cursor:default; }
+  .btn .emoji { font-size:20px; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:14px; padding:16px; margin-bottom:14px; }
+  .card h3 { margin:0 0 8px; font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+  .card .big { font-size:15px; font-weight:600; }
+  .card .sub { font-size:12.5px; color:var(--muted); margin-top:4px; }
+
+  .milestone-banner {
+    background: linear-gradient(135deg, #6d28d9, #9333ea); color:#fff; border-radius:16px;
+    padding:22px 18px; text-align:center; margin-bottom:16px;
+  }
+  .milestone-banner .big-emoji { font-size:40px; }
+  .milestone-banner h2 { margin:8px 0 4px; font-size:20px; }
+  .milestone-banner p { margin:0; font-size:13.5px; opacity:0.92; }
+
+  .badge-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .badge-pill {
+    background:#f5f3ff; color:var(--cd8); border:1px solid #ddd6fe; border-radius:999px;
+    padding:5px 11px; font-size:12px; font-weight:600;
+  }
+
+  .search-box {
+    width:100%; padding:11px 13px; font-size:15px; border:1px solid var(--border);
+    border-radius:10px; margin-bottom:10px; font-family:inherit;
+  }
+  .box-list { list-style:none; margin:0; padding:0; }
+  .box-item {
+    display:flex; justify-content:space-between; align-items:center; padding:12px 4px;
+    border-bottom:1px dashed var(--border); cursor:pointer;
+  }
+  .box-item:last-child { border-bottom:none; }
+  .box-item .name { font-size:14.5px; font-weight:600; }
+  .box-item .city { font-size:12px; color:var(--muted); }
+  .box-item .pick { font-size:12px; font-weight:700; color:var(--cd8); }
+  .box-item.selected { background:#f5f3ff; border-radius:10px; }
+
+  .leaderboard-toggle { display:flex; gap:8px; margin-bottom:12px; }
+  .leaderboard-toggle button {
+    flex:1; padding:9px; font-size:12.5px; font-weight:700; border-radius:10px;
+    border:1px solid var(--border); background:#fff; color:var(--muted); cursor:pointer;
+  }
+  .leaderboard-toggle button.active { background:var(--cd8); color:#fff; border-color:var(--cd8); }
+  .lb-row { display:flex; justify-content:space-between; align-items:center; padding:10px 4px; border-bottom:1px dashed var(--border); font-size:14px; }
+  .lb-row .rank { font-weight:700; color:var(--muted); width:22px; }
+  .lb-row .name { flex:1; font-weight:600; }
+  .lb-row .stat { font-size:13px; color:var(--cd8); font-weight:700; }
+  .empty-state { color:var(--muted); font-size:13.5px; font-style:italic; padding:14px 2px; }
+
+  input[type="text"], select { width:100%; padding:11px 13px; font-size:15px; border:1px solid var(--border); border-radius:10px; font-family:inherit; margin-bottom:10px; }
+  label.field-label { display:block; font-size:12.5px; font-weight:600; margin-bottom:4px; color:var(--muted); }
+  .checkbox-row { display:flex; align-items:flex-start; gap:8px; font-size:13.5px; margin:10px 0; }
+  .checkbox-row input { margin-top:3px; }
+
+  .privacy-note { font-size:11.5px; color:var(--muted); background:#f9f9f7; border-radius:8px; padding:9px 11px; margin-top:8px; line-height:1.5; }
+
+  nav.bottom-nav {
+    position:fixed; bottom:0; left:0; right:0; background:#fff; border-top:1px solid var(--border);
+    display:flex; z-index:10;
+  }
+  nav.bottom-nav button {
+    flex:1; background:none; border:none; padding:10px 4px 8px; font-size:11px; font-weight:600;
+    color:var(--muted); cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:2px;
+  }
+  nav.bottom-nav button .icon { font-size:19px; }
+  nav.bottom-nav button.active { color:var(--cd8); }
+
+  .share-row { display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+  .share-row button { flex:1; min-width:120px; }
+
+  footer.app-footer { max-width:560px; margin:0 auto; padding: 4px 18px 24px; font-size:11px; color:var(--muted); text-align:center; }
+  footer.app-footer a { color:var(--muted); text-decoration:underline; }
+</style>
+</head>
+<body>
+
+  <div class="demo-banner">
+    🧪 Demo mode — data is stored only in this browser, not shared across devices. <a href="./methodology.html">What this means →</a>
+  </div>
+
+  <header class="app-header">
+    <h1 id="header-title">Your ballot is coming</h1>
+    <p class="tagline" id="header-tagline">Know where you're taking it.</p>
+  </header>
+
+  <div class="stepper" id="stepper"></div>
+
+  <main>
+
+    <!-- HOME VIEW -->
+    <section class="view" id="view-home">
+
+      <div id="milestone-celebration"></div>
+
+      <div class="hero" id="home-hero">
+        <h2 id="home-hero-title">Your ballot is coming</h2>
+        <p id="home-hero-sub">Prepare now so dropping it off is a 2-minute errand, not a chore.</p>
+      </div>
+
+      <div class="action-row" id="home-actions"></div>
+
+      <div class="card" id="dropbox-card" style="display:none;">
+        <h3>Your drop box</h3>
+        <div class="big" id="dropbox-card-name"></div>
+        <div class="sub" id="dropbox-card-sub"></div>
+        <button class="btn ghost" style="margin-top:10px;" onclick="showView('dropbox')">Change drop box</button>
+      </div>
+
+      <div class="card" id="neighborhood-card">
+        <h3>Your team</h3>
+        <div id="neighborhood-card-body"></div>
+      </div>
+
+      <div class="card" id="share-card">
+        <h3>Spread it</h3>
+        <div class="share-row">
+          <button class="btn secondary" onclick="shareGeneric()">📤 Share the game</button>
+          <button class="btn secondary" onclick="shareAchievement()">🎉 My ballot counted</button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- DROP BOX VIEW -->
+    <section class="view" id="view-dropbox">
+      <div class="hero">
+        <h2>🗳️ Find your drop box</h2>
+        <p>Pick one now — you don't have to wait for your ballot.</p>
+      </div>
+      <input type="text" class="search-box" id="dropbox-search" placeholder="Search by name or city…" oninput="renderDropBoxList()">
+      <ul class="box-list" id="dropbox-list"></ul>
+      <div class="privacy-note">Drop-box locations come from Adams County's official list (via this project's verified map). This is official election information, not something we generated.</div>
+    </section>
+
+    <!-- SCAN / SUBMIT VIEW -->
+    <section class="view" id="view-submit">
+      <div class="hero">
+        <h2>✅ Confirm it counted</h2>
+        <p>Upload a screenshot of your BallotTrax "counted" / "accepted" status.</p>
+      </div>
+      <div class="card">
+        <label class="field-label" for="screenshot-input">BallotTrax screenshot</label>
+        <input type="file" id="screenshot-input" accept="image/*" onchange="onScreenshotSelected(event)">
+        <div id="screenshot-preview-wrap" style="display:none; margin-top:10px;">
+          <img id="screenshot-preview" style="max-width:100%; border-radius:10px; border:1px solid var(--border);" alt="Your screenshot preview">
+        </div>
+        <div class="checkbox-row">
+          <input type="checkbox" id="attest-checkbox">
+          <label for="attest-checkbox">This screenshot shows my ballot was <strong>counted</strong> or <strong>accepted</strong> on BallotTrax.</label>
+        </div>
+        <button class="btn primary" id="submit-screenshot-btn" disabled onclick="submitScreenshot()">Submit for review</button>
+        <div class="privacy-note">
+          Your screenshot is read in your browser only to tell submissions apart (a one-way fingerprint) — it is never uploaded or stored. In demo mode there's no real reviewer across devices; see <a href="./methodology.html">methodology</a> for what a real deployment would do differently.
+        </div>
+      </div>
+    </section>
+
+    <!-- LEADERBOARD VIEW -->
+    <section class="view" id="view-leaderboard">
+      <div class="hero">
+        <h2>🏆 Neighborhood race</h2>
+        <p>How fast can your neighborhood get its ballots in?</p>
+      </div>
+      <div class="leaderboard-toggle">
+        <button id="lb-tab-confirmed" class="active" onclick="setLeaderboardTab('confirmed')">Most confirmed</button>
+        <button id="lb-tab-rate" onclick="setLeaderboardTab('rate')">Highest participation</button>
+      </div>
+      <div class="card">
+        <div id="leaderboard-list"></div>
+      </div>
+      <div class="privacy-note">These numbers count <strong>game-confirmed ballots</strong> — people who played this game and were approved here. They are not official voter turnout figures. See <a href="./methodology.html">methodology</a>.</div>
+    </section>
+
+    <!-- ME VIEW -->
+    <section class="view" id="view-me">
+      <div class="hero">
+        <h2>You</h2>
+      </div>
+      <div class="card">
+        <label class="field-label" for="display-name-input">Display name (optional, shown only on leaderboards you join)</label>
+        <input type="text" id="display-name-input" placeholder="e.g. Jamie">
+        <label class="field-label" for="neighborhood-input">Your neighborhood / team name</label>
+        <input type="text" id="neighborhood-input" placeholder="e.g. Reunion Riverdale Crew">
+        <button class="btn primary" onclick="saveProfile()">Save</button>
+      </div>
+      <div class="card">
+        <h3>Your status</h3>
+        <div id="me-status-body"></div>
+        <div class="badge-row" id="me-badges"></div>
+      </div>
+      <div class="card">
+        <h3>Quick actions</h3>
+        <div class="action-row" id="me-quick-actions"></div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <button id="nav-home" onclick="showView('home')"><span class="icon">📬</span>Home</button>
+    <button id="nav-dropbox" onclick="showView('dropbox')"><span class="icon">🗳️</span>Drop box</button>
+    <button id="nav-leaderboard" onclick="showView('leaderboard')"><span class="icon">🏆</span>Leaderboard</button>
+    <button id="nav-me" onclick="showView('me')"><span class="icon">🙂</span>Me</button>
+  </nav>
+
+  <footer class="app-footer">
+    This is a civic turnout game, not an official election tool. <a href="./methodology.html">Methodology &amp; privacy</a> ·
+    <a href="../index.html">Official drop-box map →</a>
+  </footer>
+
+<script src="data-adapter.js"></script>
+<script src="dropboxes.js"></script>
+<script src="app.js"></script>
+<script>
+"use strict";
+
+const BALLOTTRAX_URL = "https://ballottrax.coloradosos.gov/voter/";
+
+let participant = null;
+let boxes = [];
+let currentView = "home";
+let leaderboardTab = "confirmed";
+let pendingScreenshotHash = null;
+
+const STEPS = [
+  { key: "coming", label: "Coming" },
+  { key: "ready", label: "Ready" },
+  { key: "dropped", label: "Dropped" },
+  { key: "counted", label: "Counted" }
+];
+
+async function boot() {
+  participant = await DataAdapter.getOrCreateParticipant();
+  try {
+    const data = await loadOfficialDropBoxes();
+    boxes = data.boxes;
+  } catch (err) {
+    boxes = [];
+    console.error("Could not load official drop-box data:", err);
+  }
+  renderAll();
+  // If an admin review happens in another tab of this same browser, pick
+  // it up live (demo-mode realism -- see data-adapter.js's doc comment).
+  window.addEventListener("storage", async (e) => {
+    if (e.key && e.key.indexOf("cd8game_demo_v1_") === 0) {
+      const fresh = await DataAdapter.getParticipant(participant.id);
+      if (fresh) { participant = fresh; renderAll(); }
+    }
+  });
+  showView("home");
+}
+
+function showView(name) {
+  currentView = name;
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  document.querySelectorAll("nav.bottom-nav button").forEach(b => b.classList.remove("active"));
+  const navBtn = document.getElementById("nav-" + name);
+  if (navBtn) navBtn.classList.add("active");
+  if (name === "dropbox") renderDropBoxList();
+  if (name === "leaderboard") renderLeaderboard();
+  if (name === "me") renderMe();
+}
+
+function renderAll() {
+  renderStepper();
+  renderHome();
+  renderDropBoxCard();
+  renderNeighborhoodCard();
+}
+
+function renderStepper() {
+  const idx = STEPS.findIndex(s => s.key === participant.status);
+  const el = document.getElementById("stepper");
+  el.innerHTML = STEPS.map((s, i) => {
+    let cls = "step";
+    if (i < idx) cls += " done";
+    else if (i === idx) cls += " active";
+    return `<div class="${cls}">${s.label}</div>`;
+  }).join("");
+}
+
+function renderHome() {
+  const title = document.getElementById("home-hero-title");
+  const sub = document.getElementById("home-hero-sub");
+  const actions = document.getElementById("home-actions");
+  renderMilestoneCelebration();
+
+  if (participant.status === "coming") {
+    title.textContent = "Your ballot is coming";
+    sub.textContent = "Prepare now so dropping it off is a 2-minute errand, not a chore.";
+    actions.innerHTML = `
+      <a class="btn primary" href="${BALLOTTRAX_URL}" target="_blank" rel="noopener" onclick="onTrackClicked()">
+        <span class="emoji">📬</span> Track my ballot
+      </a>
+      <button class="btn secondary" onclick="showView('dropbox')">
+        <span class="emoji">🗳️</span> Find my drop box
+      </button>
+    `;
+  } else if (participant.status === "ready") {
+    title.textContent = "You're ready";
+    sub.textContent = "Once your ballot shows up, you already know what to do.";
+    actions.innerHTML = `
+      <button class="btn good" onclick="markBallotArrived()">
+        <span class="emoji">📨</span> My ballot arrived
+      </button>
+      <a class="btn secondary" href="${BALLOTTRAX_URL}" target="_blank" rel="noopener">
+        <span class="emoji">📬</span> Check BallotTrax
+      </a>
+    `;
+  } else if (participant.status === "dropped") {
+    title.textContent = "Nice — it's on its way back";
+    sub.textContent = "Keep an eye on BallotTrax, then confirm here once it's counted.";
+    actions.innerHTML = `
+      <a class="btn secondary" href="${BALLOTTRAX_URL}" target="_blank" rel="noopener">
+        <span class="emoji">📬</span> Track it on BallotTrax
+      </a>
+      <button class="btn primary" onclick="showView('submit')">
+        <span class="emoji">✅</span> Confirm it counted
+      </button>
+    `;
+  } else {
+    title.textContent = "Your ballot counted! 🎉";
+    sub.textContent = "Thanks for voting — now help your neighborhood catch up.";
+    actions.innerHTML = `
+      <button class="btn secondary" onclick="shareAchievement()">
+        <span class="emoji">📤</span> Share "my ballot counted"
+      </button>
+      <button class="btn secondary" onclick="showView('leaderboard')">
+        <span class="emoji">🏆</span> See the leaderboard
+      </button>
+    `;
+  }
+}
+
+function renderMilestoneCelebration() {
+  const el = document.getElementById("milestone-celebration");
+  if (participant.status !== "counted" || !(participant.badges || []).length) {
+    el.innerHTML = "";
+    return;
+  }
+  const labels = { early_bird: "⚡ Early Bird", first_100: "🔥 First 100" };
+  el.innerHTML = `
+    <div class="milestone-banner">
+      <div class="big-emoji">✅</div>
+      <h2>Your ballot counted!</h2>
+      <p>Nice work getting it in fast.</p>
+      <div class="badge-row" style="justify-content:center;">
+        ${(participant.badges || []).map(b => `<span class="badge-pill" style="background:rgba(255,255,255,0.18);color:#fff;border-color:rgba(255,255,255,0.3);">${labels[b] || b}</span>`).join("")}
+      </div>
+    </div>`;
+}
+
+function renderDropBoxCard() {
+  const card = document.getElementById("dropbox-card");
+  if (!participant.selectedDropBox) { card.style.display = "none"; return; }
+  card.style.display = "block";
+  document.getElementById("dropbox-card-name").textContent = participant.selectedDropBox.name;
+  document.getElementById("dropbox-card-sub").textContent =
+    (participant.selectedDropBox.city ? participant.selectedDropBox.city + " · " : "") +
+    "a convenient option — you can use any authorized Colorado drop box or mail.";
+}
+
+function renderNeighborhoodCard() {
+  const body = document.getElementById("neighborhood-card-body");
+  if (participant.neighborhoodId) {
+    DataAdapter.listNeighborhoods().then(all => {
+      const n = all.find(x => x.id === participant.neighborhoodId);
+      body.innerHTML = `<div class="big">${n ? n.name : "—"}</div><div class="sub">Every confirmed ballot moves your team's counter.</div>`;
+    });
+  } else {
+    body.innerHTML = `<div class="sub">Pick a team so your confirmed ballot counts toward a neighborhood race.</div>
+      <button class="btn ghost" style="margin-top:8px;" onclick="showView('me')">Choose a neighborhood →</button>`;
+  }
+}
+
+// ---------- Drop box picker ----------
+
+function renderDropBoxList() {
+  const q = (document.getElementById("dropbox-search").value || "").toLowerCase();
+  const list = document.getElementById("dropbox-list");
+  const filtered = boxes.filter(b =>
+    !q || b.name.toLowerCase().includes(q) || (b.city || "").toLowerCase().includes(q)
+  );
+  if (boxes.length === 0) {
+    list.innerHTML = `<li class="empty-state">Couldn't load drop-box locations right now. Try reloading, or use the <a href="../index.html">official map</a> directly.</li>`;
+    return;
+  }
+  if (filtered.length === 0) {
+    list.innerHTML = `<li class="empty-state">No boxes match "${q}".</li>`;
+    return;
+  }
+  list.innerHTML = filtered.map(b => {
+    const selected = participant.selectedDropBox && participant.selectedDropBox.name === b.name;
+    return `<li class="box-item${selected ? " selected" : ""}" onclick="selectDropBox('${b.name.replace(/'/g, "\\'")}')">
+      <div><div class="name">${b.name}</div><div class="city">${b.city || ""}</div></div>
+      <div class="pick">${selected ? "✓ Selected" : "Select →"}</div>
+    </li>`;
+  }).join("");
+}
+
+async function selectDropBox(name) {
+  const box = boxes.find(b => b.name === name);
+  if (!box) return;
+  const patch = { selectedDropBox: box };
+  if (participant.status === "coming") patch.status = "ready";
+  participant = await DataAdapter.updateParticipant(participant.id, patch);
+  renderAll();
+  renderDropBoxList();
+  showView("home");
+}
+
+// ---------- Tracking / arrival / drop actions ----------
+
+async function onTrackClicked() {
+  if (participant.trackingStartedAt) return;
+  const patch = { trackingStartedAt: new Date().toISOString() };
+  if (participant.status === "coming") patch.status = "ready";
+  participant = await DataAdapter.updateParticipant(participant.id, patch);
+  renderAll();
+}
+
+async function markBallotArrived() {
+  participant = await DataAdapter.updateParticipant(participant.id, {
+    ballotArrivedSelfReportedAt: new Date().toISOString()
+  });
+  renderAll();
+  alert("Your ballot is here. Let's get it back. Vote, then drop it at your chosen box (or any authorized option) and self-report below.");
+}
+
+async function markDropped() {
+  participant = await DataAdapter.updateParticipant(participant.id, {
+    selfReportedDroppedAt: new Date().toISOString(),
+    status: "dropped"
+  });
+  renderAll();
+  showView("home");
+}
+
+// ---------- Screenshot submission ----------
+
+async function onScreenshotSelected(e) {
+  const file = e.target.files[0];
+  const submitBtn = document.getElementById("submit-screenshot-btn");
+  pendingScreenshotHash = null;
+  if (!file) { submitBtn.disabled = true; return; }
+
+  const previewWrap = document.getElementById("screenshot-preview-wrap");
+  const previewImg = document.getElementById("screenshot-preview");
+  const url = URL.createObjectURL(file);
+  previewImg.src = url;
+  previewWrap.style.display = "block";
+
+  try {
+    pendingScreenshotHash = await computeImageHashFromFile(file);
+  } catch (err) {
+    console.error("Could not hash screenshot:", err);
+  }
+  URL.revokeObjectURL(url);
+  updateSubmitEnabled();
+}
+
+document.addEventListener("change", (e) => {
+  if (e.target && e.target.id === "attest-checkbox") updateSubmitEnabled();
+});
+
+function updateSubmitEnabled() {
+  const attested = document.getElementById("attest-checkbox").checked;
+  document.getElementById("submit-screenshot-btn").disabled = !(attested && pendingScreenshotHash);
+}
+
+async function submitScreenshot() {
+  if (!pendingScreenshotHash) return;
+  const { submission, duplicateOf } = await DataAdapter.createSubmission({
+    participantId: participant.id,
+    imageHash: pendingScreenshotHash,
+    selfAttestation: { sawCountedStatus: true, submittedAt: new Date().toISOString() }
+  });
+  document.getElementById("screenshot-input").value = "";
+  document.getElementById("screenshot-preview-wrap").style.display = "none";
+  document.getElementById("attest-checkbox").checked = false;
+  pendingScreenshotHash = null;
+  updateSubmitEnabled();
+
+  if (duplicateOf) {
+    alert("Thanks! This looks similar to a submission already on file, so it's been flagged for a quick manual check rather than auto-approved.");
+  } else {
+    alert("Thanks! Your submission is pending review. You'll see your status update here once it's confirmed.");
+  }
+  showView("home");
+}
+
+// ---------- Leaderboard ----------
+
+async function setLeaderboardTab(tab) {
+  leaderboardTab = tab;
+  document.getElementById("lb-tab-confirmed").classList.toggle("active", tab === "confirmed");
+  document.getElementById("lb-tab-rate").classList.toggle("active", tab === "rate");
+  renderLeaderboard();
+}
+
+async function renderLeaderboard() {
+  const rows = await DataAdapter.getLeaderboard();
+  const sorted = leaderboardTab === "confirmed" ? sortByMostConfirmed(rows) : sortByHighestParticipation(rows);
+  const el = document.getElementById("leaderboard-list");
+  if (sorted.length === 0) {
+    el.innerHTML = `<div class="empty-state">No neighborhoods yet — be the first to pick one from the "Me" tab.</div>`;
+    return;
+  }
+  el.innerHTML = sorted.map((r, i) => {
+    const stat = leaderboardTab === "confirmed"
+      ? `${r.confirmedCount} confirmed`
+      : `${Math.round(r.participationRate * 100)}%`;
+    return `<div class="lb-row"><div class="rank">#${i + 1}</div><div class="name">${r.name}</div><div class="stat">${stat}</div></div>`;
+  }).join("");
+}
+
+// ---------- Me / profile ----------
+
+function renderMe() {
+  document.getElementById("display-name-input").value = participant.displayName || "";
+  DataAdapter.listNeighborhoods().then(all => {
+    const current = all.find(n => n.id === participant.neighborhoodId);
+    document.getElementById("neighborhood-input").value = current ? current.name : "";
+  });
+
+  const statusBody = document.getElementById("me-status-body");
+  const statusLabel = { coming: "Waiting on your ballot", ready: "Ready to vote", dropped: "Ballot dropped", counted: "Ballot counted ✅" }[participant.status];
+  statusBody.innerHTML = `<div class="big">${statusLabel}</div>
+    <div class="sub">${participant.selfReportedDroppedAt ? "Self-reported dropped: " + formatDate(participant.selfReportedDroppedAt) : "Not yet self-reported as dropped."}</div>
+    <div class="sub">${participant.confirmedAt ? "Confirmed counted: " + formatDate(participant.confirmedAt) : "Not yet confirmed by a reviewer."}</div>`;
+
+  document.getElementById("me-badges").innerHTML = (participant.badges || []).map(b =>
+    `<span class="badge-pill">${badgeLabel(b)}</span>`
+  ).join("");
+
+  const quick = document.getElementById("me-quick-actions");
+  let html = "";
+  if (participant.status === "ready" || participant.status === "coming") {
+    html += `<button class="btn ghost" onclick="markDropped()">🗳️ I already dropped my ballot</button>`;
+  }
+  if (participant.status === "dropped") {
+    html += `<button class="btn primary" onclick="showView('submit')">✅ Confirm it counted</button>`;
+  }
+  quick.innerHTML = html;
+}
+
+async function saveProfile() {
+  const name = document.getElementById("display-name-input").value.trim();
+  const neighborhoodName = document.getElementById("neighborhood-input").value.trim();
+  const patch = { displayName: name || null };
+  if (neighborhoodName) {
+    const county = participant.selectedDropBox ? participant.selectedDropBox.county : null;
+    const n = await DataAdapter.getOrCreateNeighborhood(neighborhoodName, county);
+    patch.neighborhoodId = n.id;
+  }
+  participant = await DataAdapter.updateParticipant(participant.id, patch);
+  renderAll();
+  alert("Saved.");
+}
+
+function badgeLabel(key) {
+  return {
+    early_bird: "⚡ Early Bird",
+    first_100: "🔥 First 100"
+  }[key] || key;
+}
+
+function formatDate(iso) {
+  try { return new Date(iso).toLocaleDateString(undefined, { month: "short", day: "numeric" }); }
+  catch (e) { return iso; }
+}
+
+// ---------- Sharing ----------
+// Never shares personal ballot-tracking info -- only generic, non-identifying messages.
+
+async function shareText(text, url) {
+  if (navigator.share) {
+    try { await navigator.share({ text, url }); return; } catch (e) { /* user cancelled, fine */ }
+  }
+  try {
+    await navigator.clipboard.writeText(text + (url ? " " + url : ""));
+    alert("Copied to your clipboard — paste it anywhere.");
+  } catch (e) {
+    alert(text);
+  }
+}
+
+function shareGeneric() {
+  shareText("Your ballot is coming. Know where you're taking it — join the CD-8 Ballot Journey game.", location.origin + location.pathname);
+}
+
+async function shareAchievement() {
+  shareText("My ballot counted! 🎉 Track yours and help your neighborhood finish first.", location.origin + location.pathname);
+}
+
+boot();
+</script>
+</body>
+</html>

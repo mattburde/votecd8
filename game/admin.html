@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ballot Journey — Admin</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root { --ink:#1a1f2b; --muted:#5b6472; --paper:#fafaf8; --cd8:#6d28d9; --good:#16a34a; --bad:#dc2626; --warn:#b45309; --border:#e4e2dc; }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--paper); color:var(--ink); font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  header { padding:14px 20px; background:#fff; border-bottom:1px solid var(--border); }
+  header h1 { margin:0; font-size:18px; }
+  header p { margin:3px 0 0; font-size:12px; color:var(--muted); }
+  main { max-width:960px; margin:0 auto; padding:18px 20px 60px; }
+
+  .danger-banner {
+    background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:10px;
+    padding:12px 14px; font-size:12.5px; line-height:1.5; margin-bottom:18px;
+  }
+
+  #gate { max-width:360px; margin:60px auto; padding:0 20px; text-align:center; }
+  #gate input { width:100%; padding:11px 13px; font-size:15px; border:1px solid var(--border); border-radius:10px; margin:12px 0; font-family:inherit; }
+  #gate button { width:100%; padding:12px; font-size:15px; font-weight:700; background:var(--cd8); color:#fff; border:none; border-radius:10px; cursor:pointer; }
+  #gate .hint { font-size:11.5px; color:var(--muted); margin-top:10px; }
+
+  .stat-grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap:10px; margin-bottom:22px; }
+  .stat-tile { background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px 14px; }
+  .stat-tile .value { font-size:24px; font-weight:700; }
+  .stat-tile .label { font-size:11.5px; color:var(--muted); margin-top:2px; }
+
+  h2 { font-size:14px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); margin:28px 0 10px; border-bottom:1px solid var(--border); padding-bottom:6px; }
+
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  th, td { text-align:left; padding:9px 10px; font-size:13px; border-bottom:1px solid var(--border); }
+  th { background:#f9f9f7; font-size:11px; text-transform:uppercase; letter-spacing:.03em; color:var(--muted); }
+  tr:last-child td { border-bottom:none; }
+
+  .badge { display:inline-block; padding:3px 9px; border-radius:999px; font-size:11px; font-weight:700; }
+  .badge.pending { background:#fef9c3; color:#854d0e; }
+  .badge.duplicate_flagged { background:#fee2e2; color:#991b1b; }
+  .badge.approved { background:#dcfce7; color:#166534; }
+  .badge.rejected { background:#f1f5f9; color:#475569; }
+
+  .review-actions button { font-size:12px; font-weight:700; padding:5px 10px; border-radius:7px; border:1px solid var(--border); background:#fff; cursor:pointer; margin-right:6px; }
+  .review-actions button.approve { color:var(--good); border-color:#bbf7d0; }
+  .review-actions button.reject { color:var(--bad); border-color:#fecaca; }
+
+  .bar-row { display:flex; align-items:center; gap:8px; margin:5px 0; font-size:12.5px; }
+  .bar-row .day { width:72px; color:var(--muted); flex:none; }
+  .bar-track { flex:1; background:#f1f0eb; border-radius:4px; height:14px; overflow:hidden; }
+  .bar-fill { background:var(--cd8); height:100%; }
+  .bar-row .count { width:28px; text-align:right; flex:none; font-weight:700; }
+
+  .empty-state { color:var(--muted); font-size:13px; font-style:italic; padding:12px; }
+  .muted-label { color:var(--muted); }
+  code { background:#f1f0eb; padding:1px 5px; border-radius:4px; font-size:12px; }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <h1 style="font-size:19px;">Admin — enter code</h1>
+  <p style="font-size:12.5px;color:var(--muted);">
+    This is a UI gate for demo purposes only — not real authentication. Anyone who can view this page's
+    source can see the code. Do not treat this as access control once real participant/submission data
+    is involved — see game/DELIVERABLES.md.
+  </p>
+  <input type="password" id="gate-input" placeholder="Admin code">
+  <button onclick="tryGate()">Enter</button>
+  <div class="hint">Demo code: <code>cd8demo</code></div>
+</div>
+
+<div id="dashboard" style="display:none;">
+  <header>
+    <h1>Ballot Journey — Admin dashboard</h1>
+    <p>Demo mode: this shows only what's in <em>this browser's</em> local storage, not a real cross-device backend.</p>
+  </header>
+  <main>
+
+    <div class="danger-banner">
+      🧪 <strong>Demo mode.</strong> No screenshots are shown below because this prototype never stores the
+      original image anywhere (by design — see "Screenshot privacy" in game/DELIVERABLES.md). Review here is
+      based on self-attestation and duplicate-hash signals only. A real pilot needs a backend that can hold a
+      screenshot briefly, show it to a human reviewer, and then delete it.
+    </div>
+
+    <div class="stat-grid" id="stat-grid"></div>
+
+    <h2>Review queue — pending &amp; flagged submissions</h2>
+    <div id="review-queue"></div>
+
+    <h2>Neighborhood leaderboard</h2>
+    <div id="leaderboard-table"></div>
+
+    <h2>Daily confirmations</h2>
+    <div id="daily-chart"></div>
+
+    <h2>Time-to-completion</h2>
+    <div id="ttc-body"></div>
+
+    <h2>All participants</h2>
+    <div id="participants-table"></div>
+
+  </main>
+</div>
+
+<script src="data-adapter.js"></script>
+<script src="app.js"></script>
+<script>
+"use strict";
+
+const ADMIN_DEMO_CODE = "cd8demo"; // demo-only, see DELIVERABLES.md
+
+function tryGate() {
+  const val = document.getElementById("gate-input").value;
+  if (val === ADMIN_DEMO_CODE) {
+    sessionStorage.setItem("cd8game_admin_demo_gate", "1");
+    document.getElementById("gate").style.display = "none";
+    document.getElementById("dashboard").style.display = "block";
+    renderDashboard();
+  } else {
+    alert("Wrong code.");
+  }
+}
+
+async function renderDashboard() {
+  const stats = await DataAdapter.getAdminStats();
+  const submissions = await DataAdapter.listSubmissions({});
+  const participants = await (async () => {
+    // DemoLocalAdapter doesn't expose a raw "list all" on purpose (the
+    // interface is written for a backend where that'd be a privileged
+    // query) -- reconstruct it from getAdminStats' leaderboard plus a
+    // dedicated accessor would be the real-backend approach. For the demo
+    // adapter we read its mirror directly via a small helper it exposes.
+    return DataAdapter._demoMode ? demoListAllParticipants() : [];
+  })();
+
+  renderStatGrid(stats);
+  renderReviewQueue(submissions, participants);
+  renderLeaderboardTable(stats.leaderboard);
+  renderDailyChart(stats.dailyConfirmations);
+  renderTimeToCompletion(participants);
+  renderParticipantsTable(participants);
+}
+
+// Demo-adapter-only helper: localStorage's "participants" mirror is meant
+// purely to let this one-browser demo show an admin view at all. A real
+// backend-backed adapter would instead expose a proper, access-controlled
+// listParticipants() method -- deliberately not added to the documented
+// interface in data-adapter.js so it's obvious this is demo scaffolding.
+function demoListAllParticipants() {
+  try {
+    const raw = localStorage.getItem("cd8game_demo_v1_participants");
+    const obj = raw ? JSON.parse(raw) : {};
+    return Object.values(obj);
+  } catch (e) { return []; }
+}
+
+function renderStatGrid(stats) {
+  const tiles = [
+    { label: "Participants", value: stats.participantCount },
+    { label: "Self-reported dropped", value: stats.selfReportedDroppedCount },
+    { label: "Screenshots submitted", value: stats.submissionsTotal },
+    { label: "Confirmed counted", value: stats.confirmedCount },
+    { label: "Pending review", value: stats.submissionsByStatus.pending || 0 },
+    { label: "Flagged duplicate", value: stats.submissionsByStatus.duplicate_flagged || 0 },
+    { label: "Approved", value: stats.submissionsByStatus.approved || 0 },
+    { label: "Rejected", value: stats.submissionsByStatus.rejected || 0 }
+  ];
+  document.getElementById("stat-grid").innerHTML = tiles.map(t =>
+    `<div class="stat-tile"><div class="value">${t.value}</div><div class="label">${t.label}</div></div>`
+  ).join("");
+}
+
+function renderReviewQueue(submissions, participants) {
+  const byId = {};
+  participants.forEach(p => byId[p.id] = p);
+  const queue = submissions.filter(s => s.status === "pending" || s.status === "duplicate_flagged");
+  const el = document.getElementById("review-queue");
+  if (queue.length === 0) {
+    el.innerHTML = `<div class="empty-state">Nothing waiting on review.</div>`;
+    return;
+  }
+  const rows = queue.map(s => {
+    const p = byId[s.participantId];
+    const who = p ? (p.displayName || p.id) : s.participantId;
+    const dupNote = s.likelyDuplicateOf ? `Possible duplicate of <code>${s.likelyDuplicateOf}</code>` : "";
+    return `<tr>
+      <td>${who}</td>
+      <td>${formatDateTime(s.submittedAt)}</td>
+      <td><span class="badge ${s.status}">${s.status.replace("_", " ")}</span></td>
+      <td>${s.selfAttestation ? "✓ attested" : "—"} ${dupNote}</td>
+      <td class="review-actions">
+        <button class="approve" onclick="review('${s.id}','approved')">Approve</button>
+        <button class="reject" onclick="review('${s.id}','rejected')">Reject</button>
+      </td>
+    </tr>`;
+  }).join("");
+  el.innerHTML = `<table><thead><tr><th>Participant</th><th>Submitted</th><th>Status</th><th>Signals</th><th>Action</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+async function review(submissionId, decision) {
+  const note = decision === "rejected" ? (prompt("Optional note for this rejection:") || null) : null;
+  await DataAdapter.reviewSubmission(submissionId, decision, note);
+  renderDashboard();
+}
+
+function renderLeaderboardTable(rows) {
+  const el = document.getElementById("leaderboard-table");
+  if (!rows || rows.length === 0) {
+    el.innerHTML = `<div class="empty-state">No neighborhoods yet.</div>`;
+    return;
+  }
+  const byConfirmed = sortByMostConfirmed(rows);
+  const trs = byConfirmed.map(r =>
+    `<tr><td>${r.name}</td><td>${r.county || "—"}</td><td>${r.participantCount}</td><td>${r.confirmedCount}</td><td>${Math.round(r.participationRate * 100)}%</td></tr>`
+  ).join("");
+  el.innerHTML = `<table><thead><tr><th>Neighborhood</th><th>County</th><th>Participants</th><th>Confirmed</th><th>Participation</th></tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+function renderDailyChart(dailyMap) {
+  const el = document.getElementById("daily-chart");
+  const days = Object.keys(dailyMap).sort();
+  if (days.length === 0) { el.innerHTML = `<div class="empty-state">No confirmations yet.</div>`; return; }
+  const max = Math.max(...days.map(d => dailyMap[d]));
+  el.innerHTML = days.map(d => {
+    const pct = max > 0 ? Math.round((dailyMap[d] / max) * 100) : 0;
+    return `<div class="bar-row"><div class="day">${d}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div><div class="count">${dailyMap[d]}</div></div>`;
+  }).join("");
+}
+
+function renderTimeToCompletion(participants) {
+  const el = document.getElementById("ttc-body");
+  const withBoth = participants.filter(p => p.status === "counted" && p.ballotArrivedSelfReportedAt && p.confirmedAt);
+  if (withBoth.length === 0) {
+    el.innerHTML = `<div class="empty-state">Not enough data yet — needs participants with both a self-reported ballot-arrival date and a confirmed date.</div>`;
+    return;
+  }
+  const hours = withBoth.map(p => (new Date(p.confirmedAt) - new Date(p.ballotArrivedSelfReportedAt)) / 3600000).sort((a, b) => a - b);
+  const median = hours[Math.floor(hours.length / 2)];
+  const avg = hours.reduce((a, b) => a + b, 0) / hours.length;
+  el.innerHTML = `<div class="stat-grid">
+    <div class="stat-tile"><div class="value">${(median / 24).toFixed(1)}d</div><div class="label">Median arrival → counted</div></div>
+    <div class="stat-tile"><div class="value">${(avg / 24).toFixed(1)}d</div><div class="label">Average arrival → counted</div></div>
+    <div class="stat-tile"><div class="value">${withBoth.length}</div><div class="label">Participants measured</div></div>
+  </div>
+  <p style="font-size:11.5px;color:var(--muted);">Based only on participants' self-reported ballot-arrival time, never an inferred mailing date.</p>`;
+}
+
+function renderParticipantsTable(participants) {
+  const el = document.getElementById("participants-table");
+  if (participants.length === 0) { el.innerHTML = `<div class="empty-state">No participants yet.</div>`; return; }
+  const trs = participants
+    .slice()
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    .map(p => `<tr>
+      <td>${p.displayName ? p.displayName : '<span class="muted-label">anonymous</span>'}</td>
+      <td>${p.status}</td>
+      <td>${p.selectedDropBox ? p.selectedDropBox.name : "—"}</td>
+      <td>${p.confirmedAt ? formatDateTime(p.confirmedAt) : "—"}</td>
+      <td>${(p.badges || []).join(", ") || "—"}</td>
+    </tr>`).join("");
+  el.innerHTML = `<table><thead><tr><th>Name</th><th>Status</th><th>Drop box</th><th>Confirmed</th><th>Badges</th></tr></thead><tbody>${trs}</tbody></table>`;
+}
+
+function formatDateTime(iso) {
+  try { return new Date(iso).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+  catch (e) { return iso; }
+}
+
+if (sessionStorage.getItem("cd8game_admin_demo_gate") === "1") {
+  document.getElementById("gate").style.display = "none";
+  document.getElementById("dashboard").style.display = "block";
+  renderDashboard();
+}
+</script>
+</body>
+</html>

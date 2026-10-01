@@ -28,6 +28,31 @@ locations, and an address-based drop-box search with driving directions.
   one in with a guessed or estimated number. `priority.html`'s own script
   derives scores/tiers from whatever is here; this file must never hold a
   pre-assigned tier or score itself.
+- `game/` -- "Ballot Journey," a separate turnout-game prototype (track your
+  ballot, find a drop box, confirm it counted, neighborhood leaderboard). A
+  **turnout product, not a persuasion product**: never asks how someone
+  voted, never recommends a candidate. It's a self-contained app with its
+  own files (`index.html`, `admin.html`, `methodology.html`,
+  `data-adapter.js`, `dropboxes.js`, `app.js`); see `game/DELIVERABLES.md`
+  for the full writeup and `game/SCHEMA.md` for data shapes. Key constraints
+  that must hold for any future change in here:
+  - It reuses `index.html`'s official drop-box data the same way
+    `priority.html` does (fetch + extract, no duplication), and must never
+    modify `index.html`.
+  - It has **no real backend** -- this repo is static GitHub Pages with no
+    server. `game/data-adapter.js` is a documented, swappable storage
+    interface; the shipped implementation is a single-device localStorage
+    demo, clearly labeled as such in the UI. Don't let that labeling quietly
+    disappear, and don't build new game features that assume real
+    cross-device shared state exists until a real backend adapter is wired
+    in (see DELIVERABLES.md §2-3).
+  - Screenshot images are never retained anywhere, by design (only a
+    client-computed perceptual hash + a self-attestation survive) -- see
+    DELIVERABLES.md §5-6 before changing anything in the screenshot-submit
+    flow, since that tradeoff was deliberate, not an oversight.
+  - `game/admin.html`'s access gate is explicitly not real security (a
+    hardcoded demo string) -- don't treat it as one, and don't let real
+    participant data flow through it without replacing it first.
 
 There is intentionally no build step, bundler, or external data file for the
 map itself. Data lives inline in `index.html` as `const adamsDropboxData =
